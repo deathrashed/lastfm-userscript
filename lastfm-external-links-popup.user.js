@@ -1,20 +1,24 @@
 // ==UserScript==
 // @name           Last.fm: External Links Popup
 // @namespace      https://github.com/deathrashed/userscripts
-// @description    Creates a small ⁖ in front of each artist link on www.last.fm. Clicking it opens a popup menu with external services, updated based on the clicked artist.
+// @description    Quick-access popup ⁖ for external links on Last.fm artist pages. Creates a small ⁖ in front of each artist link on www.last.fm. Clicking it opens a popup menu with external services, updated based on the clicked artist.
 // @icon           https://cdn.icon-icons.com/icons2/808/PNG/512/lastfm_icon-icons.com_66107.png
 // @match          https://www.last.fm/*
 // @match          https://www.lastfm.*/*
 // @match          https://cn.last.fm/*
+// @version        1
+// @license        MIT
 // @grant          GM_addStyle
 // @author         deathrashed
-// @downloadURL    https://raw.githubusercontent.com/deathrashed/userscripts/main/lastfm-external-links-popup.user.js
-// @updateURL      https://raw.githubusercontent.com/deathrashed/userscripts/main/lastfm-external-links-popup.user.js
+// @downloadURL    https://update.greasyfork.org/scripts/563609/Lastfm%3A%20External%20Links%20Popup.user.js
+// @updateURL      https://update.greasyfork.org/scripts/563609/Lastfm%3A%20External%20Links%20Popup.meta.js
+// @downloadGIT    https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js
+// @updateGIT      https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js
 // ==/UserScript==
-
+ 
 (function () {
     'use strict';
-
+ 
     // Include popup styling and logic from the expanded script
     GM_addStyle(`
         .LMAa {
@@ -120,11 +124,11 @@
             pointer-events: none;
         }
     `);
-
+ 
     // Variables for current context (from popup script)
     let currentArtist = '';
     let currentAlbum = '';
-
+ 
     // Setup popup UI (adapted from expanded script)
     function setupUI() {
         // Create button (hidden, as dots will trigger)
@@ -133,7 +137,7 @@
         button.innerHTML = '⌘';
         button.title = 'External Music Services';
         document.body.appendChild(button);
-
+ 
         // Create menu with expanded and categorized links (added Fanart.tv and Musixmatch, separator before Databases)
         const menu = document.createElement('div');
         menu.id = 'external-music-menu';
@@ -185,7 +189,7 @@
             <a href="#" id="phind-link" target="_blank" title="Search on Phind">Phind</a>
         `;
         document.body.appendChild(menu);
-
+ 
         // Close menu when clicking outside
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('external-music-menu');
@@ -194,7 +198,7 @@
                 menu.classList.remove('visible');
             }
         });
-
+ 
         // Close menu on link click for better UX
         menu.addEventListener('click', function(e) {
             if (e.target.tagName === 'A') {
@@ -202,13 +206,13 @@
             }
         });
     }
-
+ 
     // Update menu links (from popup script, adapted)
     function updateMenuLinks(artist, album) {
         const encodedArtist = encodeURIComponent(artist || '');
         const encodedAlbum = encodeURIComponent(album || '');
         const query = album ? `${encodedAlbum} ${encodedArtist}` : encodedArtist;
-
+ 
         // Update menu header with just the selection in red
         const contextEl = document.getElementById('current-context');
         if (artist && album) {
@@ -218,7 +222,7 @@
         } else {
             contextEl.textContent = 'No artist/album detected';
         }
-
+ 
         // Disable links if no artist
         const links = document.querySelectorAll('#external-music-menu a');
         links.forEach(link => {
@@ -229,9 +233,9 @@
                 link.classList.remove('disabled');
             }
         });
-
+ 
         if (!artist) return;
-
+ 
         // Update each link (prioritize album + artist where supported)
         if (album) {
             document.getElementById('metal-archives-link').href =
@@ -310,7 +314,7 @@
         document.getElementById('phind-link').href =
             `https://www.phind.com/search?q=${aiPrompt}`;
     }
-
+ 
     // Function to show popup with artist context
     function showPopupForArtist(artistName) {
         currentArtist = artistName.replace(/\+/g, ' '); // Removed .toLowerCase() to preserve case
@@ -319,22 +323,22 @@
         const menu = document.getElementById('external-music-menu');
         menu.classList.add('visible');
     }
-
+ 
     const selector = 'a:not(.auth-dropdown-menu-item):not([aria-hidden="true"])[href^="/music"]';
     const headerSelector = 'h1.header-new-title[itemprop="name"]';
-
+ 
     function addDotLink(artistLink) {
         const artistPath = new URL(artistLink.href).pathname;
         const match = artistPath.match(/\/music\/([^/#]+)$/i);
         if (!match) return;
-
+ 
         const artistName = decodeURIComponent(match[1]);
         if (!artistName) return;
-
+ 
         const dotLink = createDotLink(artistName, artistLink);
         artistLink.parentNode.insertBefore(dotLink, artistLink);
     }
-
+ 
     function createDotLink(artistName, anchorEl) {
         const dotLink = document.createElement("span");
         dotLink.className = 'LMAa';
@@ -345,20 +349,20 @@
             e.stopPropagation();
             showPopupForArtist(artistName);
         };
-
+ 
         const computedStyle = getComputedStyle(anchorEl);
         dotLink.style.color = computedStyle.color;
         dotLink.style.fontSize = computedStyle.fontSize;
-
+ 
         return dotLink;
     }
-
+ 
     function addDotLinks(node) {
         const nodeListA = node.querySelectorAll(selector);
         for (const artistLink of nodeListA) {
             addDotLink(artistLink);
         }
-
+ 
         const nodeListH1 = node.querySelectorAll(headerSelector);
         for (const headerElement of nodeListH1) {
             const headerText = headerElement.innerText;
@@ -366,11 +370,11 @@
             headerElement.parentNode.insertBefore(dotLink, headerElement);
         }
     }
-
+ 
     // Initialize popup and dots (matching original exactly)
     setupUI();
     addDotLinks(document);
-
+ 
     const observer = new MutationObserver(mutations => {
         for (const mutation of mutations) {
             for (const node of mutation.addedNodes) {
@@ -380,7 +384,7 @@
             }
         }
     });
-
+ 
     observer.observe(document.body, {
         childList: true,
         subtree: true,

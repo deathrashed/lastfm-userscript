@@ -69,9 +69,20 @@ No more tab chaos — everything you need for any artist, one click away.
 
 2. Click **Install this script** on Greasy Fork (or drag the `.user.js` file into your manager)
 
+
+
+# Download
+
+[Greasy Fork](https://greasyfork.org/en/scripts/563609-last-fm-external-links-popup)
+
+[GitHub](https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js)
+
+[Source](https://github.com/deathrashed/lastfm-userscript/blob/main/lastfm-external-links-popup.user.js)
+
 ---
 
 ## Notes & Limitations
+
 - Currently supports **artist** links and headers only (album support planned — PRs welcome)  
 - If a service changes its search URL format, links may break — report it and I’ll update  
 - Zero tracking, no ads, no external `@require` — pure client-side JS  
