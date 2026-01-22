@@ -1,1 +1,2 @@
-# macOS.DS_Store.AppleDouble.LSOverride# Editor folders.vscode/.idea/*.sublime-workspace*.sublime-project# Tampermonkey/Greasemonkey artifacts*.db*.wal*.shmconfig.xml# Node/build artifactsnode_modules/dist/build/# Temp files*.swp*.tmp*~
+# macOS.DS_Store.AppleDouble.LSOverride# Editor folders.vscode/.idea/*.sublime-workspace*.sublime-project# Tampermonkey/Greasemonkey artifacts*.db*.wal*.shmconfig.xml# Node/build artifactsnode_modules/dist/build/# Temp files*.swp*.tmp*~
+.DS_Store
