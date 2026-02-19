@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name           Last.fm: Toolbox
 // @namespace      https://github.com/deathrashed/lastfm-userscript
-// @description    Quick-access popup ⁖ for external links on Last.fm artist pages. Creates a small ⁖ in front of each artist link on www.last.fm. Clicking it opens a popup menu with external services, updated based on the clicked artist.
+// @description    A smart, quick-access popup that adapts to your current selection on Last.fm, with support for 30+ services. Open it via the symbols next to artist (⁖) or album (≫) names, or the bottom-left icon.
 // @icon           https://cdn.icon-icons.com/icons2/808/PNG/512/lastfm_icon-icons.com_66107.png
 // @match          https://www.last.fm/*
 // @match          https://www.lastfm.*/*
 // @match          https://cn.last.fm/*
-// @version        2
+// @version        3
 // @license        MIT
 // @grant          GM_addStyle
 // @author         deathrashed

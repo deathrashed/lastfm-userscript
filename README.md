@@ -1,4 +1,4 @@
-# Last.fm: External Links Popup
+# Last.fm: Toolbox
 
 A powerful userscript that adds a quick-access popup with **30+ curated music services** to any **artist** or **album** link on Last.fm.  
 
@@ -79,9 +79,9 @@ Toggle visibility of individual sections and link symbols — all preferences ar
 
 ## Download
 
-- [Greasy Fork](https://greasyfork.org/en/scripts/563609-last-fm-external-links-popup)
-- [GitHub](https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js)
-- [Source](https://github.com/deathrashed/lastfm-userscript/blob/main/lastfm-external-links-popup.user.js)
+- [Greasy Fork](https://greasyfork.org/en/scripts/563609-last-fm-toolbox)
+- [GitHub](https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-toolbox.user.js)
+- [Source](https://github.com/deathrashed/lastfm-userscript/blob/main/lastfm-toolbox.user.js)
 
 ---
 
@@ -96,7 +96,7 @@ Toggle visibility of individual sections and link symbols — all preferences ar
 ## Source & Contributing
 
 Full source:  
-[github.com/deathrashed/lastfm-userscript/blob/main/lastfm-external-links-popup.user.js](https://github.com/deathrashed/lastfm-userscript/blob/main/lastfm-external-links-popup.user.js)
+[github.com/deathrashed/lastfm-userscript/blob/main/lastfm-toolbox.user.js](https://github.com/deathrashed/lastfm-userscript/blob/main/lastfm-toolbox.user.js)
 
 Bugs, feature requests, or "add X" suggestions → open an issue on GitHub.
 
