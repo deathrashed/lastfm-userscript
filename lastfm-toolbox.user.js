@@ -1,21 +1,21 @@
 // ==UserScript==
-// @name           Last.fm: External Links Popup
+// @name           Last.fm: Toolbox
 // @namespace      https://github.com/deathrashed/lastfm-userscript
 // @description    Quick-access popup ⁖ for external links on Last.fm artist pages. Creates a small ⁖ in front of each artist link on www.last.fm. Clicking it opens a popup menu with external services, updated based on the clicked artist.
 // @icon           https://cdn.icon-icons.com/icons2/808/PNG/512/lastfm_icon-icons.com_66107.png
 // @match          https://www.last.fm/*
 // @match          https://www.lastfm.*/*
 // @match          https://cn.last.fm/*
-// @version        1
+// @version        2
 // @license        MIT
 // @grant          GM_addStyle
 // @author         deathrashed
-// @downloadURL    https://update.greasyfork.org/scripts/563609/Lastfm%3A%20External%20Links%20Popup.user.js
-// @updateURL      https://update.greasyfork.org/scripts/563609/Lastfm%3A%20External%20Links%20Popup.meta.js
-// @downloadGIT    https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js
-// @updateGIT      https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-external-links-popup.user.js
+// @downloadGIT    https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-toolbox.user.js
+// @updateGIT      https://raw.githubusercontent.com/deathrashed/lastfm-userscript/main/lastfm-toolbox.user.js
 // @require        https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js
 // @resource       https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
+// @downloadURL https://update.greasyfork.org/scripts/563609/Lastfm%3A%20Toolbox.user.js
+// @updateURL https://update.greasyfork.org/scripts/563609/Lastfm%3A%20Toolbox.meta.js
 // ==/UserScript==
 
 (function () {
