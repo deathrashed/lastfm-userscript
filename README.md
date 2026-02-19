@@ -49,8 +49,9 @@ Click either symbol to open a sleek, dark popup from the bottom-left — packed 
 **AI Overviews:**  
 [Perplexity](https://www.perplexity.ai/), [ChatGPT](https://chatgpt.com/), [You.com](https://you.com/), [Grok](https://grok.com/)
 
-**Smart Search:**  
-Custom search box supports "Artist" or "Artist - Album" format to update all services at once
+**Smart Search & Quick Access:**  
+- [Listen (Monochrome)](https://monochrome.tf/) — quick access button at the top
+- Custom search box supports "Artist" or "Artist - Album" format to update all services at once
 
 **Settings:**  
 Toggle visibility of individual sections and link symbols — all preferences are saved

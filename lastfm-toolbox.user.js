@@ -253,6 +253,7 @@
             <p id="current-context"></p>
             <hr>
             <a href="#" id="search-link" target="_blank" title="Search">Search</a>
+            <a href="#" id="listen-link" target="_blank" title="Listen">Listen</a>
             <hr>
             <p class="menu-section" data-section="databases">Databases</p>
             <div class="section-content" data-section="databases">
@@ -660,6 +661,9 @@
     // Search link
     document.getElementById("search-link").href =
       `https://www.google.com/search?udm=50&source=searchlabs&q=${query}`;
+    // Listen link
+    document.getElementById("listen-link").href =
+      `https://monochrome.tf/search/${query}`;
     // AI section
     let aiPrompt;
     if (album) {
