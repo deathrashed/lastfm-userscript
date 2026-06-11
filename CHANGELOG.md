@@ -1,0 +1,23 @@
+### v4 — 2026-06-11
+- Light & dark mode with CSS custom properties
+- Settings modal with tabs (General, Sections, AI, Custom, Advanced)
+- AI prompt modal with dropdown presets, provider selection, Copy/Copy & Open/Open
+- Service popup system: main row opens centered popup, hover **+** forces new tab
+- Default Open Mode setting: Popup Window or New Tab for all services
+- AI providers: ChatGPT, Claude, Perplexity, Brave AI, Mistral, HuggingChat, You.com, Grok
+- Track context support: detect `/music/Artist/_/Track` pages and links
+- Context badges with distinct colors for artist/album/track
+- Quick actions: icon-only with text revealed on hover
+- Footer with gear settings and light/dark toggle icons
+- Manual Search with Artist, Artist - Album, and Artist - Album - Track support
+- Custom services with `{artist}`, `{album}`, `{track}`, `{query}`, `{type}` templates
+- Collapsible categories with state persistence in localStorage
+- Unified scrollbar system across all panels
+- Keyboard shortcut: `Ctrl+Shift+E`
+- 35+ services across 7 categories
+- Hover and grid toolbox icons on artist/album/track links
+- Right-click context menu support
+- Chartlist integration
+- Open All per category
+- SPA navigation detection
+- MutationObserver for dynamic content
