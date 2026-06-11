@@ -174,3 +174,12 @@ Example: `https://mysite.com/search?q={query}`
 [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript)
 
 Bugs, feature requests, or suggestions — open an issue on GitHub.
+
+## Recommended
+
+[**Last.fm Artwork Upload Helper**](https://github.com/chr1sx/Last.fm-Artwork-Upload-Helper/) by chr1sx
+- a userscript that streamlines uploading album artwork
+- Using [COV](https://covers.musichoarders.xyz/) integration to find high-quality covers, then opens the Last.fm upload page with the image pre-filled and ready to submit
+- This is a must-have tool.
+
+---
