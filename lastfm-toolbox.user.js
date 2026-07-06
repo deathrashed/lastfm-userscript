@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name           Last.fm: Toolbox
 // @namespace      https://github.com/deathrashed/lastfm-userscript
-// @description    A smart, quick-access popup for Last.fm with Font Awesome icons and 30+ external services.
+// @description    A context-aware music toolkit for Last.fm. Adds quick-access to 35+ databases, streaming, lyrics, cover art, custom links, and AI prompts for any artist, album, or track.
 // @icon           https://cdn.icon-icons.com/icons2/808/PNG/512/lastfm_icon-icons.com_66107.png
 // @match          https://www.last.fm/*
 // @match          https://www.lastfm.*/*
 // @match          https://cn.last.fm/*
-// @version        4
+// @version        5
 // @license        MIT
 // @grant          GM_addStyle
+// @grant          GM_registerMenuCommand
 // @author         deathrashed
 // @require        https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js
 // @downloadURL    https://update.greasyfork.org/scripts/563609/Lastfm%3A%20Toolbox.user.js
@@ -38,9 +39,13 @@
       --toggle-off: #555;
       --toggle-on: #DA2323;
       --brand: #DA2323;
+      --brand-rgb: 218, 35, 35;
       --brand-hover: #FF1B20;
       --shadow: rgba(0,0,0,.3);
       --menu-shadow: rgba(0,0,0,.3);
+      --scrollbar-bg: #282828;
+      --scrollbar-thumb: #666;
+      --scrollbar-thumb-hover: #999;
     }
 
     .lfm-light-mode {
@@ -57,12 +62,13 @@
       --toggle-off: #ddd;
       --shadow: rgba(0,0,0,.12);
       --menu-shadow: rgba(0,0,0,.12);
+      --scrollbar-bg: #e5e5e5;
+      --scrollbar-thumb: #a0a0a0;
+      --scrollbar-thumb-hover: #7a7a7a;
     }
 
     #external-music-button {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
       width: 40px;
       height: 40px;
       background: var(--bg-primary);
@@ -73,7 +79,7 @@
       cursor: pointer;
       font-size: 20px;
       box-shadow: 0 2px 5px var(--shadow);
-      z-index: 9999;
+      z-index: 99999999 !important;
       transition: background .2s, color .2s;
     }
 
@@ -84,13 +90,11 @@
 
     #external-music-menu {
       position: fixed;
-      bottom: 70px;
-      left: 20px;
       background: var(--bg-primary);
       border-radius: 8px;
       box-shadow: 0 4px 16px var(--menu-shadow);
       display: none;
-      z-index: 9999;
+      z-index: 99999999 !important;
       width: 260px;
       max-height: 600px;
       direction: rtl;
@@ -105,21 +109,35 @@
     }
 
     #lfm-scroll-area::-webkit-scrollbar { width: 6px; }
-    #lfm-scroll-area::-webkit-scrollbar-track { background: #282828; }
-    #lfm-scroll-area::-webkit-scrollbar-thumb { background: #666; border-radius: 3px; }
-    #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: #999; }
+    #lfm-scroll-area::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+    #lfm-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+    #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track { background: #e5e5e5; }
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb { background: #a0a0a0; }
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: #7a7a7a; }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
     #external-music-menu.visible {
       display: block;
       animation: lfmSlideUp .2s ease-out;
     }
 
+    html.lfm-toggle-bottom-left #external-music-button { top: auto; right: auto; bottom: 20px; left: 20px; }
+    html.lfm-toggle-bottom-left #external-music-menu { top: auto; right: auto; bottom: 70px; left: 20px; }
+    html.lfm-toggle-bottom-right #external-music-button { top: auto; left: auto; bottom: 20px; right: 20px; }
+    html.lfm-toggle-bottom-right #external-music-menu { top: auto; left: auto; bottom: 70px; right: 20px; }
+    html.lfm-toggle-top-left #external-music-button { bottom: auto; right: auto; top: 75px; left: 20px; }
+    html.lfm-toggle-top-left #external-music-menu { top: auto; right: auto; bottom: 20px; left: 20px; }
+    html.lfm-toggle-top-right #external-music-button { bottom: auto; left: auto; top: 75px; right: 20px; }
+    html.lfm-toggle-top-right #external-music-menu { top: auto; left: auto; bottom: 20px; right: 20px; }
+
     @keyframes lfmSlideUp {
       from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes lfmSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -182,16 +200,6 @@
       border: none;
       height: 1px;
       background: var(--border-color);
-    }
-
-    #external-music-menu a {
-      display: block;
-      padding: 8px 15px;
-      color: var(--text-primary) !important;
-      text-decoration: none !important;
-      font-size: 13px;
-      direction: ltr;
-      transition: background .15s;
     }
 
     #external-music-menu a i,
@@ -261,28 +269,84 @@
 
     .hidden-section { display: none !important; }
 
-    #search-input-container {
-      padding: 10px 15px;
-      display: flex;
-      justify-content: center;
-      direction: ltr;
-    }
+   #search-input-container {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: center;
+  direction: ltr;
+  position: relative;
+}
 
-    #search-input {
-      width: 170px;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 4px;
-      padding: 6px 10px;
-      color: var(--text-primary);
-      font-size: 13px;
-      transition: border-color .2s;
-    }
+#search-input-wrapper {
+  position: relative;
+  width: 170px;
+}
 
-    #search-input:focus {
-      outline: none;
-      border-color: var(--brand);
-    }
+#search-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  /* Increased right padding (28px) so typed text doesn't hide behind the ? */
+  padding: 6px 28px 6px 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: border-color .2s;
+  box-sizing: border-box;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+/* The "?" Icon */
+#search-help-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: help;
+  user-select: none;
+}
+
+#search-help-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%; /* Anchor to the horizontal center of the search bar */
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: normal;
+  z-index: 9999;
+  box-shadow: 0 4px 12px var(--shadow);
+  line-height: 1.5;
+  min-width: 240px;
+  max-width: 380px;
+  word-break: break-word;
+
+  visibility: hidden;
+  opacity: 0;
+  /* Shift left by 50% of its own width to center it, and push down 5px for the animation */
+  transform: translate(-50%, 5px);
+  transform-origin: bottom center;
+  transition: opacity .12s ease, transform .12s ease, visibility .12s;
+  pointer-events: none;
+}
+
+#search-input-wrapper:hover #search-help-popup {
+  visibility: visible;
+  opacity: 1;
+  /* Maintain the horizontal centering while sliding up to 0px */
+  transform: translate(-50%, 0);
+}
 
     .lfm-custom-form input {
       background: var(--input-bg);
@@ -546,14 +610,47 @@
   pointer-events: none;
 }
 
-.lfm-hide-hover-icons .lfm-hover-icon,
-.lfm-hide-hover-icons .lfm-grid-toolbox-icon {
-  display: none !important;
-}
+/* Hide inline elements globally when the select choice is 'hidden' */
+    html.lfm-icons-hidden .lfm-hover-icon,
+    html.lfm-icons-hidden .lfm-grid-toolbox-icon {
+      display: none !important;
+    }
 
-.lfm-hide-open-all .open-all-link {
-  display: none !important;
-}
+    /* Minimal Icon Override Variant */
+    html.lfm-icon-style-minimal .lfm-hover-icon,
+    html.lfm-icon-style-minimal .lfm-grid-toolbox-icon {
+      background: transparent !important;
+      box-shadow: none !important;
+      color: var(--brand) !important;
+      font-size: 14px;
+    }
+
+    /* ==========================================================================
+       TEXT & GRID HIGHLIGHT LAYER (Only active when lfm-highlight-eligible is true)
+       ========================================================================== */
+    
+    /* 1. Standard inline text links turn red with an underline */
+    html.lfm-highlight-eligible a.lfm-toolbox-enabled:hover {
+      color: var(--brand) !important;
+      text-decoration: underline !important;
+    }
+
+    /* 2. Albums Grid Layout: Only glow the primary title/album string. Leave playcounts/artists normal */
+    html.lfm-highlight-eligible .grid-items-item-main-text > a:hover,
+    html.lfm-highlight-eligible .resource-list--release-list-item-main-text > a:hover {
+      color: var(--brand) !important;
+      text-shadow: 0 0 8px rgba(218, 35, 35, 0.6) !important;
+      text-decoration: none !important;
+    }
+
+    /* 3. Artists Grid Layout: Glow the main name link container */
+    html.lfm-highlight-eligible .grid-items-item-name:hover,
+    html.lfm-highlight-eligible .grid-items-item-details > a:hover,
+    html.lfm-highlight-eligible .cover-art-caption > a:hover {
+      color: var(--brand) !important;
+      text-shadow: 0 0 8px rgba(218, 35, 35, 0.6) !important;
+      text-decoration: none !important;
+    }
 
 .menu-section .section-chevron {
   width: 14px;
@@ -577,6 +674,7 @@
 .section-content.visible {
   max-height: 5000px;
   opacity: 1;
+  overflow: visible;
 }
 
 #external-music-menu a {
@@ -612,12 +710,17 @@
   color: #fff !important;
   border-color: var(--brand) !important;
   font-weight: 600;
-  transition: transform .15s, background .15s;
+  transition: transform .2s, background .2s, box-shadow .2s;
 }
 
 #lfm-modal-box .btn-primary:hover {
   background: var(--brand-hover) !important;
-  transform: scale(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(218,35,35,.25);
+}
+
+#lfm-modal-box .btn-primary:active {
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -822,39 +925,160 @@
   padding: 9px 15px 9px 20px;
 }
 
-.settings-modal #lfm-modal-box {
-  min-width: 380px;
-  max-width: 480px;
-}
-
-.settings-tabs {
+#lfm-modal-box.settings-modal {
+  width: 650px;
+  height: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
   display: flex;
-  gap: 4px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 8px;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
 }
 
-.settings-tab {
-  padding: 6px 14px;
+#lfm-modal-box.settings-modal .settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px 0;
+  position: relative;
+}
+
+#lfm-modal-box.settings-modal .settings-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+#lfm-modal-box.settings-modal .settings-header .settings-header-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--brand);
   border: none;
-  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background .15s, color .15s;
+  text-decoration: none;
+}
+
+#lfm-modal-box.settings-modal .settings-header .settings-header-btn:hover {
+  background: var(--bg-hover);
+  color: var(--brand-hover);
+}
+
+#lfm-modal-box.settings-modal .settings-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  padding: 12px 20px 20px;
+  gap: 12px;
+  min-height: 0;
+}
+
+.settings-modal .settings-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-modal .settings-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  margin: 0 0 12px;
+  padding: 0;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+#lfm-modal-box .settings-tab {
+  padding: 4px 10px !important;
+  border: 1px solid var(--border-color);
+  background: transparent;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px !important;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background .15s, color .15s;
+  border-radius: 4px !important;
+  transition: all .2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
 
-.settings-tab:hover {
+#lfm-modal-box .settings-tab:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
-.settings-tab.active {
-  background: var(--brand);
-  color: #fff;
+#lfm-modal-box .settings-tab:active {
+  transform: none;
+}
+
+#lfm-modal-box .settings-tab.active {
+  background: rgba(var(--brand-rgb), .15) !important;
+  color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--brand);
+  text-underline-offset: 2px;
+}
+
+#lfm-modal-box .settings-tab.active i {
+  color: var(--brand) !important;
+}
+
+#lfm-modal-box .settings-tab:focus {
+  outline: none;
+}
+
+#lfm-modal-box .settings-tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -1px;
+}
+
+#lfm-modal-box .settings-tab i {
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+
+.settings-modal .settings-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.service-launch-btn.hidden {
+  display: none !important;
 }
 
 .settings-panel {
@@ -897,14 +1121,22 @@
 .settings-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 10px 12px;
+  width: 100%;
+  padding: 8px 10px;
   border-radius: 6px;
   transition: background .15s;
+  box-sizing: border-box;
 }
 
 .settings-item:hover {
   background: var(--bg-hover);
+}
+
+.settings-item select {
+  flex-shrink: 0;
+  min-width: 130px;
 }
 
 .modal-hr {
@@ -995,19 +1227,26 @@
 
 .lfm-modal-actions button {
   flex: 1;
-  padding: 9px 14px;
-  border: none;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background .15s, transform .15s, box-shadow .15s;
+  transition: all .2s ease;
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
 .lfm-modal-actions button:hover {
-  transform: scale(1.03);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow);
+  border-color: var(--text-secondary);
+}
+
+.lfm-modal-actions button:active {
+  transform: translateY(0);
 }
 
 .lfm-modal-actions button i {
@@ -1111,60 +1350,72 @@
   display: none;
 }
 
-.ai-modal #lfm-modal-box {
-  width: 720px;
-  max-width: 90vw;
-  max-height: 85vh;
+#lfm-modal-box.ai-modal {
+  width: 650px;
+  height: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px;
+}
+
+#lfm-modal-box.ai-modal #ai-prompt-text {
+  flex: 1;
+  resize: none;
+  margin: 10px 0;
 }
 
 #lfm-scroll-area::-webkit-scrollbar,
-.ai-modal #lfm-modal-box::-webkit-scrollbar,
-.settings-modal #lfm-modal-box::-webkit-scrollbar,
+#lfm-modal-box.ai-modal::-webkit-scrollbar,
+.settings-modal .settings-panel::-webkit-scrollbar,
 #settings-custom-list::-webkit-scrollbar {
   width: 6px;
 }
 
 #lfm-scroll-area::-webkit-scrollbar-track,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-track,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-track,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-track,
+.settings-modal .settings-panel::-webkit-scrollbar-track,
 #settings-custom-list::-webkit-scrollbar-track {
-  background: #282828;
+  background: var(--scrollbar-bg);
 }
 
 #lfm-scroll-area::-webkit-scrollbar-thumb,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-thumb,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-thumb,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-thumb,
+.settings-modal .settings-panel::-webkit-scrollbar-thumb,
 #settings-custom-list::-webkit-scrollbar-thumb {
-  background: #666;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 #lfm-scroll-area::-webkit-scrollbar-thumb:hover,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-thumb:hover,
+.settings-modal .settings-panel::-webkit-scrollbar-thumb:hover,
 #settings-custom-list::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-track,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-track,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-track,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-track,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-track {
-  background: #e5e5e5;
+  background: var(--scrollbar-bg);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-thumb,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-thumb,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-thumb,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-thumb,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-thumb {
-  background: #a0a0a0;
+  background: var(--scrollbar-thumb);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-thumb:hover,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-thumb:hover,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-thumb:hover {
-  background: #7a7a7a;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .service-row {
@@ -1192,13 +1443,118 @@
   line-height: 1;
 }
 
-.service-row:hover .service-launch-btn {
+    .service-row:hover .service-launch-btn {
   opacity: .65;
+}
+
+    /* Always show the theaudiodb json/md buttons and make action icons visible */
+    .service-json-btn, .service-md-btn {
+      opacity: 1 !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      margin-left: 6px;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .service-json-btn:hover, .service-md-btn:hover {
+      color: var(--brand);
+    }
+
+    /* Style for small action icons placed next to services */
+    .service-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 8px;
+    }
+
+.service-action-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-action-btn:hover {
+  opacity: 1;
+  color: var(--brand);
+}
+
+.service-action-btn i,
+.service-action-btn svg {
+  pointer-events: none;
 }
 
 .service-launch-btn:hover {
   opacity: 1 !important;
   color: var(--brand);
+}
+
+.service-ai-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-row:hover .service-ai-btn {
+  opacity: .65;
+}
+
+.service-ai-btn:hover {
+  opacity: 1 !important;
+  color: var(--brand) !important;
+}
+
+.service-ai-btn i,
+.service-ai-btn svg,
+.service-json-btn i,
+.service-json-btn svg,
+.service-md-btn i,
+.service-md-btn svg {
+  pointer-events: none;
+}
+
+.service-json-btn,
+.service-md-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-row:hover .service-json-btn,
+.service-row:hover .service-md-btn {
+  opacity: .65;
+}
+
+.service-json-btn:hover,
+.service-md-btn:hover {
+  opacity: 1 !important;
+  color: var(--brand) !important;
 }
 
 .service-launch-btn i,
@@ -1219,17 +1575,17 @@
     lyrics: "Lyrics",
     covers: "Covers & Images",
     social: "Social Media",
-    additional: "Additional",
+    additional: "Utilities",
     ai: "AI",
   };
 
   const SERVICE_CATEGORIES = {
-    databases: ["google-band-link", "metal-archives-link", "rym-link", "discogs-link", "musicbrainz-link", "wikipedia-link", "album-of-the-year-link"],
-    streaming: ["spotify-link", "youtube-link", "youtube-music-link", "apple-music-link", "bandcamp-link", "soundcloud-link", "deezer-link", "tidal-link", "amazon-link", "qobuz-link"],
+    databases: ["google-band-link", "theaudiodb-link", "metal-archives-link", "rym-link", "discogs-link", "musicbrainz-link", "wikipedia-link", "album-of-the-year-link", "allmusic-link", "listenbrainz-link"],
+    streaming: ["spotify-link", "youtube-link", "youtube-music-link", "apple-music-link", "bandcamp-link", "soundcloud-link", "deezer-link", "tidal-link", "amazon-link", "qobuz-link", "audiomack-link", "monochrome-link"],
     lyrics: ["genius-link", "darklyrics-link", "google-lyrics-link", "musixmatch-link"],
-    covers: ["cov-musichoarderz-link", "google-images-link", "yahoo-images-link", "bing-images-link"],
-    social: ["instagram-link", "facebook-link", "reddit-link"],
-    additional: ["allmusic-link", "chosic-link", "spirit-of-metal-link", "metalstorm-link", "fanart-tv-link", "lucida-link", "sputnikmusic-link"],
+    covers: ["cov-musichoarderz-link", "google-images-link", "yahoo-images-link", "bing-images-link", "fanart-tv-link"],
+    social: ["instagram-link", "facebook-link", "reddit-link", "twitter-x-link"],
+    additional: ["chosic-link", "spirit-of-metal-link", "metalstorm-link", "lucida-link", "sputnikmusic-link", "audio-archive-link", "whosampled-link"],
     ai: ["perplexity-link", "chatgpt-link", "claude-link", "brave-ai-link", "mistral-link", "huggingchat-link", "you-link", "grok-link"],
   };
 
@@ -1244,7 +1600,7 @@
     "wikipedia-link": "Wikipedia",
     "spotify-link": "Spotify",
     "youtube-link": "YouTube",
-    "youtube-music-link": "YouTube Music",
+    "youtube-music-link": "YT Music",
     "apple-music-link": "Apple Music",
     "bandcamp-link": "Bandcamp",
     "soundcloud-link": "SoundCloud",
@@ -1257,9 +1613,9 @@
     "google-lyrics-link": "Google",
     "musixmatch-link": "Musixmatch",
     "cov-musichoarderz-link": "COV - MusicHoarders",
-    "google-images-link": "Google Images",
-    "yahoo-images-link": "Yahoo Images",
-    "bing-images-link": "Bing Images",
+    "google-images-link": "Google",
+    "yahoo-images-link": "Yahoo",
+    "bing-images-link": "Bing",
     "instagram-link": "Instagram",
     "facebook-link": "Facebook",
     "reddit-link": "Reddit",
@@ -1271,6 +1627,10 @@
     "lucida-link": "Lucida",
     "album-of-the-year-link": "Album of the Year",
     "sputnikmusic-link": "Sputnikmusic",
+    "theaudiodb-link": "TheAudioDB",
+    "listenbrainz-link": "ListenBrainz",
+    "monochrome-link": "Monochrome",
+    "twitter-x-link": "X (Twitter)",
     "perplexity-link": "Perplexity",
     "chatgpt-link": "ChatGPT",
     "claude-link": "Claude",
@@ -1279,11 +1639,14 @@
     "huggingchat-link": "HuggingChat",
     "you-link": "You.com",
     "grok-link": "Grok",
+    "audio-archive-link": "Audio Archive",
+    "whosampled-link": "WhoSampled",
+    "audiomack-link": "Audiomack",
   };
 
   function getServiceIcon(id) {
     const icons = {
-      "search-link": '<i class="fa-solid fa-icons"></i>',
+      "search-link": '<i class="fa-solid fa-search"></i>',
       "listen-link": '<i class="fa-solid fa-headphones"></i>',
       "google-band-link": '<i class="fa-brands fa-google"></i>',
       "metal-archives-link": '<i class="fa-solid fa-radiation"></i>',
@@ -1298,7 +1661,7 @@
       "bandcamp-link": '<i class="fa-brands fa-bandcamp"></i>',
       "soundcloud-link": '<i class="fa-brands fa-soundcloud"></i>',
       "deezer-link": '<i class="fa-brands fa-deezer"></i>',
-      "tidal-link": '<i class="fa-brands fa-tidal"></i>',
+      "tidal-link": '<i class="fa-solid fa-water"></i>',
       "qobuz-link": '<i class="fa-solid fa-music"></i>',
       "amazon-link": '<i class="fa-brands fa-amazon"></i>',
       "genius-link": '<i class="fa-solid fa-lightbulb"></i>',
@@ -1320,6 +1683,17 @@
       "lucida-link": '<i class="fa-solid fa-download"></i>',
       "album-of-the-year-link": '<i class="fa-solid fa-calendar"></i>',
       "sputnikmusic-link": '<i class="fa-solid fa-guitar"></i>',
+      "theaudiodb-link": '<i class="fa-solid fa-headphones-simple"></i>',
+      "listenbrainz-link": '<i class="fa-solid fa-ear-listen"></i>',
+      "audio-archive-link": '<i class="fa-solid fa-archive"></i>',
+      "whosampled-link": '<i class="fa-solid fa-users-between-lines"></i>',
+      "audiomack-link": '<i class="fa-solid fa-compact-disc"></i>',
+      /* google action icons */
+      "google-image-action": '<i class="fa-solid fa-image"></i>',
+      "google-video-action": '<i class="fa-solid fa-video"></i>',
+      "google-ai-action": '<i class="fa-solid fa-flask"></i>',
+      "monochrome-link": '<i class="fa-solid fa-file-audio"></i>',
+      "twitter-x-link": '<i class="fa-brands fa-twitter"></i>',
       "perplexity-link": '<i class="fa-solid fa-magnifying-glass"></i>',
       "chatgpt-link": '<i class="fa-solid fa-robot"></i>',
       "claude-link": '<i class="fa-solid fa-clover"></i>',
@@ -1351,7 +1725,7 @@
     "deezer-link": ctx => ctx.artist ? `https://www.deezer.com/search/${ctx.query}` : "#",
     "tidal-link": ctx => ctx.artist ? `https://tidal.com/search?q=${ctx.query}` : "#",
     "qobuz-link": ctx => ctx.artist ? `https://www.qobuz.com/us-en/search?q=${ctx.query}` : "#",
-    "amazon-link": ctx => ctx.artist ? `https://music.amazon.com.au/search?k=${ctx.query}` : "#",
+    "amazon-link": ctx => ctx.artist ? `https://music.amazon.com/search?k=${ctx.query}` : "#",
     "genius-link": ctx => ctx.artist ? `https://genius.com/search?q=${ctx.query}` : "#",
     "darklyrics-link": ctx => ctx.artist ? `http://www.darklyrics.com/search?q=${ctx.query}` : "#",
     "google-lyrics-link": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}+lyrics` : "#",
@@ -1368,9 +1742,16 @@
     "spirit-of-metal-link": ctx => ctx.artist ? `https://www.spirit-of-metal.com/liste_groupe.php?recherche_groupe=${ctx.encodedArtist}` : "#",
     "metalstorm-link": ctx => ctx.artist ? ctx.album ? `https://metalstorm.net/bands/albums.php?a_where=a.albumname&a_what=${ctx.encodedAlbum}` : `https://metalstorm.net/bands/index.php?b_where=b.bandname&b_what=${ctx.encodedArtist}` : "#",
     "fanart-tv-link": ctx => ctx.artist ? `https://fanart.tv/add-entry/?tab=music&search=${ctx.encodedArtist}${ctx.album ? "+" + ctx.encodedAlbum : ""}#music` : "#",
+    "audio-archive-link": ctx => ctx.artist ? `https://archive.org/details/audio?tab=collection&query=${ctx.query}` : "#",
+    "whosampled-link": ctx => ctx.track ? `https://www.whosampled.com/search/tracks/?q=${ctx.encodedTrack}` : ctx.album ? `https://www.whosampled.com/search/tracks/?q=${encodeURIComponent(ctx.album + ' ' + ctx.artist)}` : ctx.artist ? `https://www.whosampled.com/search/artists/?q=${ctx.encodedArtist}` : "#",
+    "audiomack-link": ctx => ctx.artist ? `https://audiomack.com/search?q=${ctx.query}` : "#",
     "lucida-link": ctx => ctx.artist ? `https://lucida.to/search?query=${ctx.query}&service=qobuz` : "#",
     "album-of-the-year-link": ctx => ctx.artist ? ctx.album ? `https://www.albumoftheyear.org/search/albums/?q=${ctx.encodedAlbum}` : `https://www.albumoftheyear.org/search/?q=${ctx.encodedArtist}` : "#",
-    "sputnikmusic-link": ctx => ctx.artist ? `https://www.sputnikmusic.com/search?q=${ctx.query}` : "#",
+    "sputnikmusic-link": ctx => ctx.artist ? `https://www.sputnikmusic.com/search_results.php?genreid=0&search_in=Bands&search_text=${ctx.query}` : "#",
+    "theaudiodb-link": ctx => ctx.artist ? `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${ctx.encodedArtist}` : "#",
+    "listenbrainz-link": ctx => ctx.artist ? `https://listenbrainz.org/search/?search_term=${ctx.query}&search_type=${ctx.track ? 'track' : ctx.album ? 'album' : 'artist'}` : "#",
+    "monochrome-link": ctx => ctx.artist ? `https://monochrome.tf/search/${ctx.query}` : "#",
+    "twitter-x-link": ctx => ctx.artist ? `https://x.com/search?q=${ctx.query}&src=typed_query&f=user` : "#",
     "perplexity-link": ctx => ctx.artist ? `https://www.perplexity.ai/search/new?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "chatgpt-link": ctx => ctx.artist ? `https://chatgpt.com/?prompt=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "claude-link": ctx => ctx.artist ? `https://claude.ai/new?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
@@ -1379,6 +1760,10 @@
     "huggingchat-link": ctx => ctx.artist ? `https://huggingface.co/chat/?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "you-link": ctx => ctx.artist ? `https://you.com/search?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "grok-link": ctx => ctx.artist ? `https://grok.com?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
+    /* google action shortcuts */
+    "google-image-action": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}&udm=2` : "#",
+    "google-video-action": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}&udm=7` : "#",
+    "google-ai-action": ctx => ctx.artist ? `https://www.google.com/search?udm=50&source=searchlabs&q=${ctx.query}` : "#",
   };
 
   function cleanName(value) {
@@ -1547,7 +1932,7 @@
       .filter(url => url && url !== "#");
 
     urls.forEach((url, i) => {
-      setTimeout(() => window.open(url, "_blank"), i * 400);
+      setTimeout(() => window.open(url, "_blank", "noopener,noreferrer"), i * 400);
     });
   }
 
@@ -1569,6 +1954,28 @@
     return d.innerHTML;
   }
 
+  function showToast(message, duration = 3000) {
+    const existing = document.getElementById("lfm-toast");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.id = "lfm-toast";
+    toast.textContent = message;
+    Object.assign(toast.style, {
+      position: "fixed", bottom: "80px", left: "50%", transform: "translateX(-50%)",
+      background: "var(--bg-primary)", color: "var(--text-primary)",
+      padding: "10px 20px", borderRadius: "8px", fontSize: "13px",
+      zIndex: "999999999", boxShadow: "0 4px 12px var(--shadow)",
+      border: "1px solid var(--border-color)",
+      transition: "opacity .3s", opacity: "0",
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = "1"; });
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
   function openExternalToolWindow(url, name, width = 1000, height = 800) {
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
@@ -1576,7 +1983,7 @@
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
     );
     if (!popup || popup.closed) {
-      window.open(url, "_blank");
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }
 
@@ -1584,7 +1991,7 @@
     if (localStorage.getItem("setting-ai-popup") !== "false") {
       openExternalToolWindow(url, "LastFmToolboxAI");
     } else {
-      window.open(url, "_blank");
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }
 
@@ -1604,6 +2011,59 @@
 
   function getDefaultOpenMode() {
     return localStorage.getItem("musicengine.defaultOpenMode") || "popup";
+  }
+
+  function updateServiceLaunchButtonsVisibility() {
+    const isPopupMode = getDefaultOpenMode() !== "tab";
+    document.querySelectorAll(".service-launch-btn").forEach(btn => {
+      btn.classList.toggle("hidden", !isPopupMode);
+    });
+  }
+
+  const TOGGLE_POSITIONS = ["bottom-left", "bottom-right", "top-left", "top-right"];
+  const TOGGLE_POSITION_KEY = "setting-toggle-position";
+
+  function getTogglePosition() {
+    const stored = localStorage.getItem(TOGGLE_POSITION_KEY);
+    return TOGGLE_POSITIONS.includes(stored) ? stored : "bottom-left";
+  }
+
+  function applyTogglePosition() {
+    const pos = getTogglePosition();
+    TOGGLE_POSITIONS.forEach(p => document.documentElement.classList.remove("lfm-toggle-" + p));
+    document.documentElement.classList.add("lfm-toggle-" + pos);
+  }
+
+  function cycleTogglePosition() {
+    const current = getTogglePosition();
+    const nextIndex = (TOGGLE_POSITIONS.indexOf(current) + 1) % TOGGLE_POSITIONS.length;
+    const nextPos = TOGGLE_POSITIONS[nextIndex];
+    localStorage.setItem(TOGGLE_POSITION_KEY, nextPos);
+    applyTogglePosition();
+    const posSelect = document.getElementById("modal-toggle-position");
+    if (posSelect) {
+      posSelect.value = nextPos;
+    }
+  }
+
+  if (typeof GM_registerMenuCommand !== "undefined") {
+    GM_registerMenuCommand("Toggle", () => {
+      const menu = document.getElementById("external-music-menu");
+      if (menu) {
+        if (menu.classList.contains("visible")) {
+          menu.classList.remove("visible");
+        } else {
+          showPopupWithContext();
+        }
+      }
+    });
+    GM_registerMenuCommand("Settings", () => {
+      const existing = document.getElementById("lfm-modal-overlay");
+      if (!existing) {
+        openSettingsModal();
+      }
+    });
+    GM_registerMenuCommand("Cycle Popup", cycleTogglePosition);
   }
 
   function renderCustomServices() {
@@ -1845,6 +2305,21 @@
       SERVICE_CATEGORIES[cat].forEach(id => {
         html += `<div class="service-row">`;
         html += `<a href="#" id="${id}" class="service-link" target="_blank">${getServiceIcon(id)}${SERVICE_LABELS[id]}</a>`;
+        if (id === "theaudiodb-link") {
+          html += `<button class="service-json-btn" data-service-id="${id}" title="Download JSON"><i class="fa-solid fa-code"></i></button>`;
+          html += `<button class="service-md-btn" data-service-id="${id}" title="Download Markdown"><i class="fa-brands fa-markdown"></i></button>`;
+        }
+        // add Google quick action icons next to the main Google entry
+        if (id === "google-band-link") {
+          html += `<span class="service-action">`;
+          html += `<button class="service-action-btn" data-action="google-image-action" title="Google Images">${getServiceIcon('google-image-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="google-video-action" title="Google Video">${getServiceIcon('google-video-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="google-ai-action" title="Google AI Mode">${getServiceIcon('google-ai-action')}</button>`;
+          html += `</span>`;
+        }
+        if (cat === "ai") {
+          html += `<button class="service-ai-btn" data-service-id="${id}" title="Open AI prompt"><i class="fa-solid fa-flask"></i></button>`;
+        }
         html += `<button class="service-launch-btn" data-service-id="${id}" title="Open in new tab"><i class="fa-solid fa-plus"></i></button>`;
         html += `</div>`;
       });
@@ -1858,7 +2333,12 @@
     const button = document.createElement("div");
     button.id = "external-music-button";
     button.innerHTML = '<i class="fa-brands fa-lastfm"></i>';
-    button.title = "Last.fm Toolbox (Ctrl+Shift+E)";
+    button.title = "Last.fm Toolbox (Ctrl+Shift+E) | Right-click to move";
+
+    button.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      cycleTogglePosition();
+    });
 
     button.addEventListener("click", e => {
       e.stopPropagation();
@@ -1886,23 +2366,31 @@
         <div id="lfm-quick-actions">
           <a href="#" id="search-link" target="_blank" title="Search"><i class="fa-solid fa-search"></i><span>Search</span></a>
           <a href="#" id="listen-link" target="_blank" title="Listen"><i class="fa-solid fa-headphones"></i><span>Listen</span></a>
-          <a href="#" id="open-ai-btn" title="AI Prompt"><i class="fa-solid fa-robot"></i><span>AI</span></a>
+          <a href="#" id="open-ai-btn" title="AI Prompt"><i class="fa-solid fa-flask"></i><span>AI</span></a>
         </div>
         ${buildCategoryHTML()}
-        <div class="section-block" data-section="custom">
+<div class="section-block" data-section="custom">
         <p class="menu-section" data-section="custom" aria-expanded="false">
           <span>Manual Search</span>
           <span class="section-chevron">▶</span>
         </p>
         <div class="section-content" data-section="custom">
           <div id="search-input-container">
-            <input type="text" id="search-input" placeholder="Artist or Artist - Album">
+            <div id="search-input-wrapper">
+              <input type="text" id="search-input" placeholder="Artist or Artist - Album">
+              <div id="search-help-toggle">?</div>
+              <div id="search-help-popup">Search by artist, album, or track.<br><strong>Supported Formats:</strong><br>
+              • Artist<br>
+              • Artist - Album<br>
+              • Artist - Album - Track
+              </div>
+            </div>
           </div>
-          <p id="search-help">Accepted formats:<br>Artist<br>Artist - Album<br>Artist - Album - Track</p>
         </div></div>
         <div id="lfm-footer">
           <a href="#" id="open-settings-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
           <a href="#" id="footer-toggle-lights" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></a>
+          <a href="#" id="footer-collapse-all" title="Collapse all categories"><i class="fa-solid fa-arrow-up-short-wide"></i></a>
         </div>
       </div>
     `;
@@ -1934,13 +2422,36 @@
       }
     });
 
+    function handleMenuClose() {
+      const behavior = localStorage.getItem("setting-close-behavior") || "close";
+      if (behavior === "keep") return false;
+      if (behavior === "timeout") {
+        setTimeout(() => { document.getElementById("external-music-menu")?.classList.remove("visible"); }, 3000);
+        return false;
+      }
+      return true;
+    }
+
     menu.querySelectorAll(".service-link").forEach(link => {
       link.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const url = this.href;
         if (!url || url === "#" || url === location.href + "#") return;
-        menu.classList.remove("visible");
+
+        if (this.id === "theaudiodb-link") {
+          menu.classList.remove("visible");
+          fetch(url).then(r => r.json()).then(data => {
+            const id = data.artists?.[0]?.idArtist;
+            if (id) window.open(`https://www.theaudiodb.com/artist/${id}`, "_blank", "noopener,noreferrer");
+            else window.open(url, "_blank", "noopener,noreferrer");
+          }).catch(() => {
+            window.open(url, "_blank", "noopener,noreferrer");
+          });
+          return;
+        }
+
+        if (handleMenuClose()) menu.classList.remove("visible");
         if (getDefaultOpenMode() === "tab") {
           window.open(url, "_blank", "noopener,noreferrer");
         } else {
@@ -1954,8 +2465,112 @@
         e.stopPropagation();
         const link = document.getElementById(this.dataset.serviceId);
         if (!link || !link.href || link.href === "#" || link.href === location.href + "#") return;
-        menu.classList.remove("visible");
+        if (handleMenuClose()) menu.classList.remove("visible");
         window.open(link.href, "_blank", "noopener,noreferrer");
+      });
+    });
+
+    menu.querySelectorAll(".service-ai-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const providerId = this.dataset.serviceId;
+        if (providerId) {
+          localStorage.setItem("lfm-last-ai-provider", providerId);
+        }
+        menu.classList.remove("visible");
+        openAIModal();
+      });
+    });
+
+    // inline action buttons (e.g., Google image/video/AI shortcuts)
+    menu.querySelectorAll(".service-action-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const actionId = this.dataset.action;
+        if (!actionId || !SERVICE_URLS[actionId]) return;
+        const url = SERVICE_URLS[actionId](buildContext(currentContext));
+        if (!url || url === "#") return;
+        if (handleMenuClose()) menu.classList.remove("visible");
+        if (getDefaultOpenMode() === "tab") {
+          window.open(url, "_blank", "noopener,noreferrer");
+        } else {
+          openToolPopup(url, "MusicEngineTool");
+        }
+      });
+    });
+
+    function formatArtistMarkdown(data) {
+      const artist = data.artists?.[0];
+      if (!artist) return "# No artist data found";
+      const name = artist.strArtist || "Unknown";
+      const banner = artist.strArtistBanner ? `\n![Banner](${artist.strArtistBanner})\n` : "";
+      const logo = artist.strArtistLogo ? `\n![Artist Logo](${artist.strArtistLogo})\n` : "";
+      const genre = artist.strGenre || "Unknown";
+      const country = artist.strCountry || "Unknown";
+      const formed = artist.intFormedYear || "Unknown";
+      const members = artist.intMembers || "Unknown";
+      const label = artist.strLabel || "Unknown";
+      const bio = artist.strBiography || "No biography available.";
+      const thumb = artist.strArtistThumb ? `\n![Band Photo](${artist.strArtistThumb})\n` : "";
+      const wide = artist.strArtistWideThumb ? `\n![Wide Thumb](${artist.strArtistWideThumb})\n` : "";
+      const fanarts = [artist.strArtistFanart, artist.strArtistFanart2, artist.strArtistFanart3, artist.strArtistFanart4].filter(Boolean);
+      const clearart = artist.strArtistClearart ? `\n![Clear Art](${artist.strArtistClearart})\n` : "";
+      return `# ${name}
+${banner}
+**${genre} • ${country}**
+
+## Band Information
+
+| Attribute | Details |
+|-----------|---------|
+| **Formed** | ${formed} |
+| **Members** | ${members} |
+| **Origin** | ${country} |
+| **Label** | ${label} |
+${logo}
+## Biography
+
+${bio}
+## Gallery
+${thumb}${wide}${fanarts.length ? "\n**Fan Art:**\n" + fanarts.map(f => `\n![Fanart](${f})\n`).join("") : ""}${clearart}
+---
+*Data from TheAudioDB • Last updated via API*`;
+    }
+
+    function downloadFromAudioDB(url, format) {
+      fetch(url).then(r => r.json()).then(data => {
+        const artist = data.artists?.[0];
+        const name = artist?.strArtist?.replace(/[^a-z0-9]/gi, "_") || "theaudiodb";
+        let content, mime, ext;
+        if (format === "json") {
+          content = JSON.stringify(data, null, 2);
+          mime = "application/json";
+          ext = "json";
+        } else {
+          content = formatArtistMarkdown(data);
+          mime = "text/markdown";
+          ext = "md";
+        }
+        const blob = new Blob([content], { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }).catch(err => showToast("Download failed: " + err.message));
+    }
+
+    menu.querySelectorAll(".service-json-btn, .service-md-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const serviceId = this.dataset.serviceId;
+        const link = document.getElementById(serviceId);
+        if (!link || !link.href || link.href === "#") return;
+        const format = this.classList.contains("service-json-btn") ? "json" : "md";
+        menu.classList.remove("visible");
+        downloadFromAudioDB(link.href, format);
       });
     });
 
@@ -2014,6 +2629,29 @@
       if (icon) icon.className = isLight ? "fa-solid fa-sun" : "fa-solid fa-moon";
     });
 
+    document.getElementById("footer-collapse-all")?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll(".menu-section").forEach(section => {
+        const name = section.dataset.section;
+        const block = document.querySelector(`.section-block[data-section="${name}"]`);
+        const content = block ? block.querySelector(`.section-content`) : document.querySelector(`.section-content[data-section="${name}"]`);
+        if (content?.classList.contains("visible")) {
+          section.classList.add("collapsed");
+          content.classList.remove("visible");
+          const arrow = section.querySelector(".section-chevron");
+          if (arrow) arrow.textContent = "▶";
+          section.setAttribute("aria-expanded", "false");
+          localStorage.setItem("menu-section-" + name, "collapsed");
+        }
+      });
+      const collapseIcon = e.currentTarget.querySelector("i");
+      if (collapseIcon) {
+        collapseIcon.className = "fa-solid fa-arrow-up-wide-short";
+        setTimeout(() => { collapseIcon.className = "fa-solid fa-arrow-up-short-wide"; }, 600);
+      }
+    });
+
     const searchInput = document.getElementById("search-input");
 
     searchInput.addEventListener("keypress", e => {
@@ -2041,100 +2679,96 @@
   }
 
   function setupToggles() {
-    const hoverToggle = document.getElementById("modal-toggle-artist-symbol") || document.getElementById("toggle-artist-symbol");
-    if (hoverToggle) {
-      if (localStorage.getItem("setting-artist-symbol") === "false") {
-        hoverToggle.classList.remove("active");
-        hoverToggle.dataset.text = "Show";
-        document.documentElement.classList.add("lfm-hide-hover-icons");
-      } else {
-        hoverToggle.classList.add("active");
-        hoverToggle.dataset.text = "Hide";
-        document.documentElement.classList.remove("lfm-hide-hover-icons");
-      }
-      hoverToggle.onclick = function () {
-        this.classList.toggle("active");
-        const active = this.classList.contains("active");
-        localStorage.setItem("setting-artist-symbol", active ? "true" : "false");
-        this.dataset.text = active ? "Hide" : "Show";
-        document.documentElement.classList.toggle("lfm-hide-hover-icons", !active);
+    // 1. Text Highlight Layer Toggle Switch Handler
+    const highlightToggle = document.getElementById("modal-toggle-highlight");
+    if (highlightToggle) {
+      const isEnabled = localStorage.getItem("setting-highlight-eligible") === "true";
+      highlightToggle.classList.toggle("active", isEnabled);
+
+      highlightToggle.onclick = function () {
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-highlight-eligible", active ? "true" : "false");
+        document.documentElement.classList.toggle("lfm-highlight-eligible", active);
       };
     }
+
+    // 3. Category Sections
     CATEGORY_ORDER.forEach(cat => {
       const toggle = document.getElementById("modal-toggle-section-" + cat) || document.getElementById("toggle-section-" + cat);
       const block = document.querySelector(`.section-block[data-section="${cat}"]`);
       if (!toggle) return;
-      if (localStorage.getItem("setting-section-" + cat) === "true") {
-        toggle.classList.add("active");
-        toggle.dataset.text = "Show";
-        block?.classList.add("hidden-section");
-      } else {
-        toggle.classList.remove("active");
-        toggle.dataset.text = "Hide";
-        block?.classList.remove("hidden-section");
-      }
+
+      // Default is shown (true), so false means hidden
+      const isHidden = localStorage.getItem("setting-section-" + cat) === "false";
+      toggle.classList.toggle("active", !isHidden);
+      block?.classList.toggle("hidden-section", isHidden);
+
       toggle.onclick = function () {
-        this.classList.toggle("active");
-        const hidden = this.classList.contains("active");
-        localStorage.setItem("setting-section-" + cat, hidden ? "true" : "false");
-        this.dataset.text = hidden ? "Show" : "Hide";
-        block?.classList.toggle("hidden-section", hidden);
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-section-" + cat, active ? "true" : "false");
+        block?.classList.toggle("hidden-section", !active);
       };
     });
+
+    // 4. Open All Links
     const openAllToggle = document.getElementById("modal-toggle-open-all") || document.getElementById("toggle-open-all");
     if (openAllToggle) {
-      if (localStorage.getItem("setting-open-all") === "false") {
-        openAllToggle.classList.remove("active");
-        openAllToggle.dataset.text = "Show";
-        document.querySelectorAll(".open-all-link").forEach(el => el.classList.add("hidden-section"));
-      } else {
-        openAllToggle.classList.add("active");
-        openAllToggle.dataset.text = "Hide";
-        document.querySelectorAll(".open-all-link").forEach(el => el.classList.remove("hidden-section"));
-      }
+      const isEnabled = localStorage.getItem("setting-open-all") === "true";
+      openAllToggle.classList.toggle("active", isEnabled);
+      document.documentElement.classList.toggle("lfm-hide-open-all", !isEnabled);
+      document.querySelectorAll(".open-all-link").forEach(el => el.classList.toggle("hidden-section", !isEnabled));
+
       openAllToggle.onclick = function () {
         const active = this.classList.toggle("active");
         localStorage.setItem("setting-open-all", active ? "true" : "false");
-        this.dataset.text = active ? "Hide" : "Show";
         document.documentElement.classList.toggle("lfm-hide-open-all", !active);
         document.querySelectorAll(".open-all-link").forEach(el => {
           el.classList.toggle("hidden-section", !active);
         });
       };
     }
+
+    // 5. Light Mode
     const lightToggle = document.getElementById("modal-toggle-light-mode") || document.getElementById("toggle-light-mode");
     if (lightToggle) {
-      if (localStorage.getItem("setting-light-mode") === "true") {
-        lightToggle.classList.add("active");
-        lightToggle.dataset.text = "On";
-        document.documentElement.classList.add("lfm-light-mode");
-      } else {
-        lightToggle.classList.remove("active");
-        lightToggle.dataset.text = "Off";
-        document.documentElement.classList.remove("lfm-light-mode");
-      }
+      const isEnabled = localStorage.getItem("setting-light-mode") === "true";
+      lightToggle.classList.toggle("active", isEnabled);
+
       lightToggle.onclick = function () {
         const active = this.classList.toggle("active");
         localStorage.setItem("setting-light-mode", active ? "true" : "false");
-        this.dataset.text = active ? "On" : "Off";
         document.documentElement.classList.toggle("lfm-light-mode", active);
+        const footerIcon = document.querySelector("#footer-toggle-lights i");
+        if (footerIcon) footerIcon.className = active ? "fa-solid fa-sun" : "fa-solid fa-moon";
       };
     }
-    const openModeToggle = document.getElementById("modal-toggle-open-mode");
-    if (openModeToggle) {
-      const stored = localStorage.getItem("musicengine.defaultOpenMode");
-      if (stored === "tab") {
-        openModeToggle.classList.remove("active");
-        openModeToggle.dataset.text = "Tab";
-      } else {
-        openModeToggle.classList.add("active");
-        openModeToggle.dataset.text = "Popup";
-      }
-      openModeToggle.onclick = function () {
-        const isPopup = this.classList.toggle("active");
-        localStorage.setItem("musicengine.defaultOpenMode", isPopup ? "popup" : "tab");
-        this.dataset.text = isPopup ? "Popup" : "Tab";
+
+    // 6. AI Popup Mode
+    const aiPopupToggle = document.getElementById("modal-toggle-ai-popup");
+    if (aiPopupToggle) {
+      const isPopup = localStorage.getItem("setting-ai-popup") !== "false";
+      aiPopupToggle.classList.toggle("active", isPopup);
+
+      aiPopupToggle.onclick = function () {
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-ai-popup", active ? "true" : "false");
       };
+    }
+
+    const defaultAISelect = document.getElementById("setting-select-default-ai-provider");
+    if (defaultAISelect) {
+      defaultAISelect.value = localStorage.getItem("setting-default-ai-provider") || "chatgpt-link";
+      defaultAISelect.addEventListener("change", function () {
+        localStorage.setItem("setting-default-ai-provider", this.value);
+      });
+    }
+
+    const aiSuffixTextarea = document.getElementById("setting-ai-custom-suffix");
+    if (aiSuffixTextarea) {
+      aiSuffixTextarea.value = localStorage.getItem("setting-ai-custom-suffix") || "";
+      aiSuffixTextarea.addEventListener("input", function () {
+        localStorage.setItem("setting-ai-custom-suffix", this.value);
+      });
     }
   }
 
@@ -2278,12 +2912,14 @@
     const overlay = document.createElement("div");
     overlay.id = "lfm-modal-overlay";
 
+    // Added "Info" tab
     const tabs = [
       { id: "general", label: "General", icon: "fa-sliders" },
       { id: "sections", label: "Sections", icon: "fa-layer-group" },
-      { id: "ai", label: "AI", icon: "fa-robot" },
+      { id: "ai", label: "AI", icon: "fa-flask" },
       { id: "custom", label: "Custom", icon: "fa-link" },
       { id: "advanced", label: "Advanced", icon: "fa-screwdriver-wrench" },
+      { id: "info", label: "Info", icon: "fa-circle-info" }
     ];
 
     const customServicesHtml = getCustomServices().map((svc, i) =>
@@ -2294,72 +2930,126 @@
         </div>
         <button class="settings-remove-btn" data-index="${i}"><i class="fa-solid fa-xmark"></i></button>
       </div>`
-    ).join("") || '<p class="settings-section-title" style="padding:10px 12px;margin:0;">No custom services added yet.</p>';
+    ).join("") ||
+    '<p class="settings-section-title" style="padding:10px 12px;margin:0;">No custom services added yet.</p>';
 
     overlay.innerHTML = `
       <div id="lfm-modal-box" class="settings-modal">
-        <span id="lfm-modal-close"><i class="fa-solid fa-xmark"></i></span>
-        <h2><i class="fa-solid fa-gear"></i> Settings</h2>
-
-        <div class="settings-tabs">
-          ${tabs.map(t => `<button class="settings-tab${t.id === "general" ? " active" : ""}" data-tab="${t.id}"><i class="fa-solid ${t.icon}"></i> ${t.label}</button>`).join("")}
+        <div class="settings-header">
+          <h2>Settings</h2>
+          <div style="display:flex;align-items:center;gap:8px;position:absolute;right:16px;top:50%;transform:translateY(-50%);">
+            <span id="lfm-modal-close" style="cursor:pointer;color:var(--text-secondary);font-size:16px;line-height:1;transition:color .15s;"><i class="fa-solid fa-xmark"></i></span>
+          </div>
         </div>
+        <div class="settings-body">
+          <div class="settings-tabs" id="settings-sidebar">
+            ${tabs.map(t => `<button class="settings-tab${t.id === "general" ? " active" : ""}" data-tab="${t.id}" title="${t.label}"><i class="fa-solid ${t.icon}"></i><span class="tab-label">${t.label}</span></button>`).join("")}
+          </div>
+          <div class="settings-content">
 
         <div class="settings-panel" data-panel="general">
           <div class="settings-group">
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Hover &amp; Grid Icons</span>
-                <span class="settings-desc">Shows the small Last.fm toolbox icon beside artist links and image cards.</span>
+                <span class="settings-label">Inline Toolbox Toggle</span>
+                <span class="settings-desc">Choose between the classic bubble button, a minimal clean icon, or hide icons entirely.</span>
               </div>
-              <div id="modal-toggle-artist-symbol" class="toggle-switch active" data-text="Hide"></div>
+              <select id="modal-icon-style" aria-label="Toggle Style">
+                <option value="bubble">Bubble</option>
+                <option value="minimal">Minimal</option>
+                <option value="hidden">Highlight</option>
+              </select>
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Open All Links</span>
-                <span class="settings-desc">Shows or hides the Open All option inside categories.</span>
+                <span class="settings-label">Hover Highlight</span>
+                <span class="settings-desc">Turns toggle items/links (right-clickable) red when hovered to denote eligibility.</span>
               </div>
-              <div id="modal-toggle-open-all" class="toggle-switch active" data-text="Hide"></div>
+              <div id="modal-toggle-highlight" class="toggle-switch"></div>
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Light Mode</span>
-                <span class="settings-desc">Use a brighter interface designed for daytime browsing.</span>
+                <span class="settings-label">Open All Button</span>
+                <span class="settings-desc">Displays the option to open all services in a specific category simultaneously.</span>
               </div>
-              <div id="modal-toggle-light-mode" class="toggle-switch" data-text="Off"></div>
+              <div id="modal-toggle-open-all" class="toggle-switch active"></div>
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Default Open Mode</span>
-                <span class="settings-desc">Popup opens services in a centered window; New Tab opens in a regular browser tab.</span>
+                <span class="settings-label">Switch Theme</span>
+                <span class="settings-desc">Toggles the user interface between Dark and Light Mode.</span>
               </div>
-              <div id="modal-toggle-open-mode" class="toggle-switch active" data-text="Popup"></div>
+              <div id="modal-toggle-light-mode" class="toggle-switch"></div>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Global Button Position</span>
+                <span class="settings-desc">Moves the main floating button to avoid overlapping cookie banners or page UI.</span>
+              </div>
+              <select id="modal-toggle-position" aria-label="Toggle position">
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="top-right">Top Right</option>
+              </select>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Menu Close Behavior</span>
+                <span class="settings-desc">Controls when the toolbox menu automatically closes after clicking a service.</span>
+              </div>
+              <select id="modal-close-behavior" aria-label="Menu close behavior">
+                <option value="close">Close immediately</option>
+                <option value="keep">Keep Open</option>
+                <option value="timeout">Auto-close after 3 seconds</option>
+              </select>
             </div>
           </div>
         </div>
 
         <div class="settings-panel" data-panel="sections" style="display:none">
-          <p class="settings-section-title">Show or hide entire categories from the toolbox menu.</p>
+          <p class="settings-section-title">Enable or disable entire categories from appearing in the toolbox menu.</p>
           ${CATEGORY_ORDER.map(cat => `<div class="settings-item">
             <div class="settings-info">
               <span class="settings-label">${CATEGORY_LABELS[cat]}</span>
-              <span class="settings-desc">${cat === "databases" ? "Google, Metal Archives, RateYourMusic, Discogs, MusicBrainz, Wikipedia, Album of the Year" : cat === "streaming" ? "Spotify, YouTube, Apple Music, Bandcamp, SoundCloud, Deezer, Tidal, Qobuz, Amazon" : cat === "lyrics" ? "Genius, DarkLyrics, Musixmatch" : cat === "covers" ? "MusicHoarders, Google Images, Yahoo Images, Bing Images" : cat === "social" ? "Instagram, Facebook, Reddit" : cat === "additional" ? "AllMusic, Chosic, Spirit of Metal, Metal Storm, Fanart.tv, Lucida, Sputnikmusic" : "Perplexity, ChatGPT, Claude, Brave AI, Mistral, HuggingChat, You.com, Grok"}</span>
+              <span class="settings-desc">${cat === "databases" ? "Google, Metal Archives, RateYourMusic, Discogs, MusicBrainz, Wikipedia, Album of the Year, AllMusic, TheAudioDB, ListenBrainz" : cat === "streaming" ? "Spotify, YouTube, YouTube Music, Apple Music, Bandcamp, SoundCloud, Deezer, Tidal, Qobuz, Amazon Music, Monochrome" : cat === "lyrics" ? "Genius, DarkLyrics, Musixmatch" : cat === "covers" ? "MusicHoarders, Google Images, Yahoo Images, Bing Images, Fanart.tv" : cat === "social" ? "Instagram, Facebook, Reddit, X (Twitter)" : cat === "additional" ? "Chosic, Spirit of Metal, Metal Storm, Lucida, Sputnikmusic" : "Perplexity, ChatGPT, Claude, Brave AI, Mistral, HuggingChat, You.com, Grok"}</span>
             </div>
-            <div id="modal-toggle-section-${cat}" class="toggle-switch" data-text="Hide"></div>
+            <div id="modal-toggle-section-${cat}" class="toggle-switch active"></div>
           </div>`).join("")}
         </div>
 
         <div class="settings-panel" data-panel="ai" style="display:none">
-          <div class="settings-item">
-            <div class="settings-info">
-              <span class="settings-label">AI Open Mode</span>
-              <span class="settings-desc">Opens AI providers in a centered popup window instead of a new browser tab.</span>
+          <div class="settings-group">
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">AI Popup Mode</span>
+                <span class="settings-desc">Opens AI providers in a centered popup window instead of a standard browser tab.</span>
+              </div>
+              <div id="modal-toggle-ai-popup" class="toggle-switch active"></div>
             </div>
-            <div id="modal-toggle-ai-popup" class="toggle-switch active" data-text="Popup"></div>
+
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Default AI Provider</span>
+                <span class="settings-desc">The default AI service selected when opening the AI prompt window.</span>
+              </div>
+              <select id="setting-select-default-ai-provider" aria-label="Default AI Provider">
+                ${AI_PROVIDERS.map(p => `<option value="${p.id}">${p.label}</option>`).join("")}
+              </select>
+            </div>
+
+            <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <div class="settings-info" style="width: 100%;">
+                <span class="settings-label">Custom Instruction Suffix</span>
+                <span class="settings-desc">Text automatically appended to all generated prompts (e.g., "Format as markdown").</span>
+              </div>
+              <textarea id="setting-ai-custom-suffix" placeholder="e.g. Always respond in markdown format with headings." style="width: 100%; height: 60px; box-sizing: border-box; resize: vertical; margin-top: 4px; padding: 8px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary); border-radius: 6px;"></textarea>
+            </div>
           </div>
         </div>
 
         <div class="settings-panel" data-panel="custom" style="display:none">
+          <p class="settings-section-title">Add custom links to the toolbox. Use variables like <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, and <code>{query}</code> in the URL template.</p>
           <div id="settings-custom-list">
             ${customServicesHtml}
           </div>
@@ -2371,8 +3061,70 @@
         </div>
 
         <div class="settings-panel" data-panel="advanced" style="display:none">
-          <p class="settings-section-title">Advanced settings and integrations — coming soon.</p>
+          <p class="settings-section-title">Backup, restore, or reset your Last.fm Toolbox configuration.</p>
+          <div class="settings-group">
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Export Settings</span>
+                <span class="settings-desc">Download your current configuration as a JSON backup file.</span>
+              </div>
+              <button id="settings-export-btn"><i class="fa-solid fa-copy"></i> Export</button>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Import Settings</span>
+                <span class="settings-desc">Restore your configuration from a backed up JSON string.</span>
+              </div>
+              <button id="settings-import-btn"><i class="fa-solid fa-file-import"></i> Import</button>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Reset to Defaults</span>
+                <span class="settings-desc">Clear all preferences and restore default values (custom services preserved).</span>
+              </div>
+              <button id="settings-reset-btn" style="border-color: var(--brand); color: var(--brand); background: rgba(218,35,35,0.1);"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
+            </div>
+          </div>
         </div>
+
+        <div class="settings-panel" data-panel="info" style="display:none">
+          <div style="text-align: center; margin-bottom: 20px; padding-top: 10px;">
+            <i class="fa-brands fa-lastfm" style="font-size: 42px; color: var(--brand); margin-bottom: 8px;"></i>
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">Last.fm: Toolbox</h3>
+            <p style="margin: 4px 0 0; color: var(--text-secondary); font-size: 12px;">Version 5 by deathrashed</p>
+          </div>
+          <div class="settings-group">
+            <a href="https://greasyfork.org/scripts/563609" target="_blank" class="settings-item" style="text-decoration: none;">
+              <div class="settings-info">
+                <span class="settings-label">Greasy Fork Page</span>
+                <span class="settings-desc">Check for updates, rate, and review the script.</span>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="color: var(--text-secondary);"></i>
+            </a>
+            <a href="https://github.com/deathrashed/lastfm-userscript" target="_blank" class="settings-item" style="text-decoration: none;">
+              <div class="settings-info">
+                <span class="settings-label">GitHub Repository</span>
+                <span class="settings-desc">View the source code, fork, or star the project.</span>
+              </div>
+              <i class="fa-brands fa-github" style="color: var(--text-secondary); font-size: 16px;"></i>
+            </a>
+            <a href="https://github.com/deathrashed/lastfm-userscript/issues/new" target="_blank" class="settings-item" style="text-decoration: none;">
+              <div class="settings-info">
+                <span class="settings-label">Feature Requests & Bug Reports</span>
+                <span class="settings-desc">Submit ideas or report issues directly via GitHub Issues.</span>
+              </div>
+              <i class="fa-solid fa-lightbulb" style="color: var(--brand); font-size: 16px;"></i>
+            </a>
+          </div>
+          <div style="margin-top: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 6px; border: 1px solid var(--border-color);">
+            <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--text-primary);">Did you know?</p>
+            <p style="margin: 0; font-size: 11px; color: var(--text-secondary); line-height: 1.4;">You can right-click any eligible artist, album, or track link across Last.fm to instantly open the toolbox context menu for that item, even if inline icons are disabled.</p>
+          </div>
+        </div>
+        <div id="settings-footer" style="text-align:center;padding:12px 24px 6px;font-size:11px;color:var(--text-secondary);border-top:1px solid var(--border-color);margin-top:12px;flex-shrink:0;">
+          <span id="settings-footer-label">General</span>
+        </div>
+          </div>
       </div>
     `;
 
@@ -2391,8 +3143,28 @@
         overlay.querySelectorAll(".settings-panel").forEach(p => p.style.display = "none");
         const panel = overlay.querySelector(`.settings-panel[data-panel="${this.dataset.tab}"]`);
         if (panel) panel.style.display = "block";
+        const footerLabel = document.getElementById("settings-footer-label");
+        const tabLabel = this.querySelector(".tab-label");
+        if (footerLabel && tabLabel) footerLabel.textContent = tabLabel.textContent;
       });
     });
+
+    const sidebarToggle = document.getElementById("settings-sidebar-toggle-btn");
+    const sidebar = document.getElementById("settings-sidebar");
+    if (sidebarToggle && sidebar) {
+      if (localStorage.getItem("setting-sidebar-expanded") !== "false") {
+        sidebar.classList.add("expanded");
+        sidebarToggle.innerHTML = '<i class="fa-solid fa-chevron-left"></i><span class="toggle-label">Collapse</span>';
+      }
+      sidebarToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const expanded = sidebar.classList.toggle("expanded");
+        localStorage.setItem("setting-sidebar-expanded", expanded ? "true" : "false");
+        this.innerHTML = expanded
+          ? '<i class="fa-solid fa-chevron-left"></i><span class="toggle-label">Collapse</span>'
+          : '<i class="fa-solid fa-chevron-right"></i><span class="toggle-label">Expand</span>';
+      });
+    }
 
     overlay.querySelectorAll(".settings-remove-btn").forEach(btn => {
       btn.addEventListener("click", function () {
@@ -2416,6 +3188,97 @@
     });
 
     setupToggles();
+
+    const posSelect = document.getElementById("modal-toggle-position");
+    if (posSelect) {
+      posSelect.value = getTogglePosition();
+      posSelect.addEventListener("change", function () {
+        localStorage.setItem(TOGGLE_POSITION_KEY, this.value);
+        applyTogglePosition();
+      });
+    }
+
+    const iconStyleSelect = document.getElementById("modal-icon-style");
+    if (iconStyleSelect) {
+      iconStyleSelect.value = localStorage.getItem("setting-icon-style") || "bubble";
+      iconStyleSelect.addEventListener("change", function () {
+        localStorage.setItem("setting-icon-style", this.value);
+        document.documentElement.classList.toggle("lfm-icon-style-minimal", this.value === "minimal");
+        document.documentElement.classList.toggle("lfm-icons-hidden", this.value === "hidden");
+      });
+    }
+
+    const openModeSelect = document.getElementById("modal-toggle-open-mode");
+    if (openModeSelect) {
+      openModeSelect.value = localStorage.getItem("musicengine.defaultOpenMode") || "popup";
+      openModeSelect.addEventListener("change", function () {
+        localStorage.setItem("musicengine.defaultOpenMode", this.value);
+        updateServiceLaunchButtonsVisibility();
+      });
+    }
+
+    const closeBehavior = document.getElementById("modal-close-behavior");
+    if (closeBehavior) {
+      closeBehavior.value = localStorage.getItem("setting-close-behavior") || "close";
+      closeBehavior.addEventListener("change", function () {
+        localStorage.setItem("setting-close-behavior", this.value);
+      });
+    }
+
+    document.getElementById("settings-export-btn")?.addEventListener("click", () => {
+      const config = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+          config[key] = localStorage.getItem(key);
+        }
+      }
+      const json = JSON.stringify(config, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "lastfm-toolbox-settings.json";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast("Settings file downloaded.");
+    });
+
+    document.getElementById("settings-import-btn")?.addEventListener("click", () => {
+      showToast("Paste settings JSON into the prompt that follows");
+      setTimeout(() => {
+        const dataStr = prompt("Paste your exported settings JSON string here:");
+        if (!dataStr) return;
+        try {
+          const config = JSON.parse(dataStr);
+          Object.keys(config).forEach(key => {
+            if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+              localStorage.setItem(key, config[key]);
+            }
+          });
+          showToast("Settings imported! Reloading page...");
+          setTimeout(() => location.reload(), 800);
+        } catch (err) {
+          showToast("Invalid settings JSON: " + err.message);
+        }
+      }, 100);
+    });
+
+    document.getElementById("settings-reset-btn")?.addEventListener("click", () => {
+      if (confirm("Are you sure you want to reset all preferences to defaults? (Your custom services list will be preserved)")) {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if ((key.startsWith("setting-") || key.startsWith("musicengine.")) && key !== "lfm-custom-services") {
+            localStorage.removeItem(key);
+          }
+        }
+        showToast("Settings reset! Reloading page...");
+        setTimeout(() => location.reload(), 800);
+      }
+    });
   }
 
   function openAIModal() {
@@ -2423,15 +3286,19 @@
     if (existing) existing.remove();
 
     const ctx = buildContext(currentContext);
-    const defaultPrompt = ctx.track
+    const suffix = localStorage.getItem("setting-ai-custom-suffix") || "";
+    const suffixStr = suffix ? "\n\n" + suffix : "";
+
+    const defaultPrompt = (ctx.track
       ? `Give me a comprehensive overview of the song ${ctx.track} by ${ctx.artist}`
       : ctx.album
         ? `Give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}`
         : ctx.artist
           ? `Give me a comprehensive overview of the band ${ctx.artist}`
-          : "";
+          : "") + suffixStr;
 
-    const lastProvider = localStorage.getItem("lfm-last-ai-provider") || "chatgpt-link";
+    const defaultProvider = localStorage.getItem("setting-default-ai-provider") || "chatgpt-link";
+    const lastProvider = localStorage.getItem("lfm-last-ai-provider") || defaultProvider;
 
     const overlay = document.createElement("div");
     overlay.id = "lfm-modal-overlay";
@@ -2446,10 +3313,12 @@
 
     overlay.innerHTML = `
       <div id="lfm-modal-box" class="ai-modal">
-        <div class="modal-header">
-          <span class="modal-header-icon"><i class="fa-solid fa-robot"></i></span>
-          <span class="modal-header-title">AI Prompt</span>
-          <span id="lfm-modal-close" class="modal-header-close"><i class="fa-solid fa-xmark"></i></span>
+        <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div class="context-badge-artist" style="padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; line-height: 1.4; align-self: flex-start; background: #3b5f8a; color: #fff; border: 1px solid #4a7ab5;"><i class="fa-solid fa-flask"></i> AI PROMPT</div>
+            <div id="lfm-header-title">Generate Prompt</div>
+          </div>
+          <span id="lfm-modal-close" style="cursor: pointer; color: var(--text-secondary); font-size: 18px; line-height: 1; transition: color .15s;"><i class="fa-solid fa-xmark"></i></span>
         </div>
 
         <div id="ai-context-display">
@@ -2473,7 +3342,7 @@
 
         <hr class="modal-hr">
 
-        <textarea id="ai-prompt-text" placeholder="Write your prompt here..." rows="4">${escHtml(defaultPrompt)}</textarea>
+        <textarea id="ai-prompt-text" placeholder="Write your prompt here...">${escHtml(defaultPrompt)}</textarea>
 
         <hr class="modal-hr">
 
@@ -2500,7 +3369,9 @@
       if (!category) return;
       const select = document.getElementById("ai-preset-select");
       select.innerHTML = category.items.map((item, i) => {
-        const full = item.prompt(ctx);
+        const suffix = localStorage.getItem("setting-ai-custom-suffix") || "";
+        const suffixStr = suffix ? "\n\n" + suffix : "";
+        const full = item.prompt(ctx) + suffixStr;
         return `<option value="${i}" data-prompt="${escHtml(full)}">${item.label}</option>`;
       }).join("");
       const first = select.options[0];
@@ -2598,13 +3469,21 @@
     });
   }
 
+  const iconStyle = localStorage.getItem("setting-icon-style") || "bubble";
+  document.documentElement.classList.toggle("lfm-icon-style-minimal", iconStyle === "minimal");
+  document.documentElement.classList.toggle("lfm-icons-hidden", iconStyle === "hidden");
+
+  if (localStorage.getItem("setting-highlight-eligible") === "true") {
+    document.documentElement.classList.add("lfm-highlight-eligible");
+  }
   if (localStorage.getItem("setting-light-mode") === "true") {
     document.documentElement.classList.add("lfm-light-mode");
   }
-  if (localStorage.getItem("setting-open-all") === "false") {
+  if (localStorage.getItem("setting-open-all") !== "true") {
     document.documentElement.classList.add("lfm-hide-open-all");
   }
 
+  applyTogglePosition();
   setupUI();
   setupKeyboardShortcut();
   setupNavigationDetection();
@@ -2637,15 +3516,6 @@
     childList: true,
     subtree: true,
   });
-
-  setTimeout(() => {
-    addContextMenu(document);
-    addChartlistContextEntries(document);
-  }, 2000);
-
-  setInterval(() => {
-    addContextMenu(document);
-  }, 3000);
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {

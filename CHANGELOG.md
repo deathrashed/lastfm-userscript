@@ -1,3 +1,35 @@
+### v6 — 2026-07-06
+- **Category Reorganization**: AllMusic moved to Databases, Fanart.tv moved to Covers & Images, Additional category renamed to Utilities
+- **New Services**: TheAudioDB (with webpage resolution, JSON download, and Markdown download), ListenBrainz (context-aware search per type), Monochrome in Streaming, X (Twitter) in Social Media
+- **TheAudioDB Smart Resolution**: Clicking the service link fetches the API JSON, extracts the artist ID, and redirects to the actual visual webpage. Also includes dedicated buttons to download raw JSON or formatted Markdown files.
+- **Icon Updates**: Tidal (`fa-water`), Grok (`fa-x-twitter`), Search quick action (`fa-search`), plus icons for all new services
+- **Manual Search Info Popup**: Replaced text with a `fa-question` icon inside the search box that toggles a small popup above showing accepted formats
+- **AI Provider Popup Toggle**: Each AI service now has a robot icon button that opens the AI prompt modal with that provider pre-selected
+- **Settings Modal Redesign**: Vertical collapsible sidebar tabs (icon-only or expanded), centered "Settings" title (22px), footer showing current tab name, less button padding, improved hover/active states, Open Toolbox button removed
+- **Menu Close Behavior**: New setting with three options — Close on Select (default), Keep Open, Auto-close (3s)
+- **Open All Off by Default**: Open All links are now hidden by default; must be enabled in Settings > Sections
+- **Light/Dark Icon Sync**: Toggling light mode via settings modal now also updates the footer sun/moon icon
+- **Toast Notifications**: Replaced all `alert()`/`prompt()` calls with an auto-dismissing toast overlay for settings actions
+- **CSS Cleanup**: Removed duplicate `#external-music-menu a` rule; scrollbar colors now use CSS variables (`--scrollbar-bg`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`)
+- **Security Fixes**: Added `rel="noopener noreferrer"` to all `window.open` calls; fixed Amazon Music domain (`.com.au` → `.com`)
+- **Performance**: Removed redundant `setInterval` (3s) and `setTimeout` (2s) — MutationObserver + visibilitychange handler suffice
+
+### v5 — 2026-06-27
+- **Toggle Button Positioning**: The main toggle button can now be moved to Top Left, Top Right, Bottom Left, or Bottom Right of the viewport (resolving overlapping issues with browser/cookie banners).
+- **Fixed Header Compatibility**: Top button positions are aligned to `top: 75px` to fully clear the fixed Last.fm header bar.
+- **Improved Z-Index Stacking**: Raised the toggle button and menu `z-index` to prevent coverage by page elements.
+- **Menu Bottom Alignment**: The toolbox menu remains bottom-aligned (only moving left-to-right) for a consistent layout regardless of the button's vertical position.
+- **Quick Position Cycle**: Right-click (contextmenu) on the toggle button instantly cycles its position.
+- **Settings Modal Redesign**: Center-aligned modal styled consistently at a fixed `650px` width by `650px` height. Title styled with matching context-badge tags (`CONFIG`) that adapt to light and dark modes. Tab navigation features a unified outline pill styling, transitioning to red when active.
+- **Settings Scrollable Panels**: The settings body panels scroll independently (`overflow-y: auto`), keeping settings modal header and tabs pinned.
+- **Connected AI popup toggle**: Bound the missing AI popup toggle listener in the AI settings tab.
+- **Advanced Configuration Actions**: Implemented fully functional buttons in the "Advanced" tab:
+  - **Export Settings**: Copies toolbox settings to the clipboard as JSON.
+  - **Import Settings**: Restores preference states from a pasted JSON backup.
+  - **Reset to Defaults**: Resets preferences back to default configurations.
+- **Settings Modal Integration**: Added an "Open Toolbox" button in the Settings modal header.
+- **Userscript Manager Command Menu**: Registered `Toggle`, `Settings`, and `Cycle Popup` commands in Tampermonkey/Violentmonkey menus for keyboard/extension accessibility when the button is covered.
+
 ### v4 — 2026-06-11
 - Light & dark mode with CSS custom properties
 - Settings modal with tabs (General, Sections, AI, Custom, Advanced)

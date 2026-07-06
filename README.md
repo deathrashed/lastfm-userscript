@@ -40,6 +40,7 @@
 - **Track Support** – Full context detection for track pages (`/music/Artist/_/Track`) and links; AI prompts adapt for tracks
 - **Manual Search** – Set context manually via `Artist`, `Artist - Album`, or `Artist - Album - Track` formats
 - **Custom Services** – Add your own URLs with `{artist}`, `{album}`, `{track}`, `{query}`, `{type}` template variables
+- **Customizable Positioning** – Move the toggle button to Top Left, Top Right, Bottom Left, or Bottom Right (via right-click, settings, or extension menu) to avoid overlapping cookie settings or browser UI
 - **Collapsible Categories** – All sections collapse/expand; state persisted in localStorage
 - **Keyboard Shortcut** – Ctrl+Shift+E to open/close the popup with auto-detected page context
 - **Chartlist Integration** – The "..." menu on scrobble rows includes a toolbox entry
@@ -53,12 +54,12 @@
 | Category | Services |
 |----------|----------|
 | **Primary** | Search (Google), Listen (Monochrome), AI Prompt |
-| **Databases** | [Google](https://www.google.com/search?udm=50), [Metal Archives](https://www.metal-archives.com/), [Rate Your Music](https://rateyourmusic.com/), [Discogs](https://www.discogs.com/), [MusicBrainz](https://musicbrainz.org/), [Wikipedia](https://en.wikipedia.org/), [Album of the Year](https://www.albumoftheyear.org/) |
-| **Streaming** | [Spotify](https://open.spotify.com/), [YouTube](https://www.youtube.com/), [YouTube Music](https://music.youtube.com/), [Apple Music](https://music.apple.com/), [Bandcamp](https://bandcamp.com/), [SoundCloud](https://soundcloud.com/), [Deezer](https://www.deezer.com/), [Tidal](https://tidal.com/), [Qobuz](https://www.qobuz.com/), [Amazon Music](https://music.amazon.com/) |
+| **Databases** | [Google](https://www.google.com/search?udm=50), [Metal Archives](https://www.metal-archives.com/), [Rate Your Music](https://rateyourmusic.com/), [Discogs](https://www.discogs.com/), [MusicBrainz](https://musicbrainz.org/), [Wikipedia](https://en.wikipedia.org/), [Album of the Year](https://www.albumoftheyear.org/), [AllMusic](https://www.allmusic.com/), [TheAudioDB](https://www.theaudiodb.com/), [ListenBrainz](https://listenbrainz.org/) |
+| **Streaming** | [Spotify](https://open.spotify.com/), [YouTube](https://www.youtube.com/), [YouTube Music](https://music.youtube.com/), [Apple Music](https://music.apple.com/), [Bandcamp](https://bandcamp.com/), [SoundCloud](https://soundcloud.com/), [Deezer](https://www.deezer.com/), [Tidal](https://tidal.com/), [Qobuz](https://www.qobuz.com/), [Amazon Music](https://music.amazon.com/), [Monochrome](https://monochrome.tf/) |
 | **Lyrics** | [Genius](https://genius.com/), [DarkLyrics](http://www.darklyrics.com/), [Google](https://www.google.com/), [Musixmatch](https://www.musixmatch.com/) |
-| **Covers & Images** | [COV MusicHoarders](https://covers.musichoarders.xyz/), [Google Images](https://images.google.com/), [Yahoo Images](https://images.search.yahoo.com/), [Bing Images](https://www.bing.com/images/search) |
-| **Social Media** | [Instagram](https://www.instagram.com/), [Facebook](https://www.facebook.com/), [Reddit](https://www.reddit.com/) |
-| **Additional** | [AllMusic](https://www.allmusic.com/), [Chosic](https://www.chosic.com/), [Spirit of Metal](https://www.spirit-of-metal.com/), [Metal Storm](https://metalstorm.net/), [Fanart.tv](https://fanart.tv/), [Lucida](https://lucida.to/), [Sputnikmusic](https://www.sputnikmusic.com/) |
+| **Covers & Images** | [COV MusicHoarders](https://covers.musichoarders.xyz/), [Google Images](https://images.google.com/), [Yahoo Images](https://images.search.yahoo.com/), [Bing Images](https://www.bing.com/images/search), [Fanart.tv](https://fanart.tv/) |
+| **Social Media** | [Instagram](https://www.instagram.com/), [Facebook](https://www.facebook.com/), [Reddit](https://www.reddit.com/), [X (Twitter)](https://x.com/) |
+| **Utilities** | [Chosic](https://www.chosic.com/), [Spirit of Metal](https://www.spirit-of-metal.com/), [Metal Storm](https://metalstorm.net/), [Lucida](https://lucida.to/), [Sputnikmusic](https://www.sputnikmusic.com/) |
 | **AI** | [Perplexity](https://www.perplexity.ai/), [ChatGPT](https://chatgpt.com/), [Claude](https://claude.ai/), [Brave AI](https://search.brave.com/ask), [Mistral](https://chat.mistral.ai/), [HuggingChat](https://huggingface.co/chat/), [You.com](https://you.com/), [Grok](https://grok.com/) |
 
 ---
@@ -79,7 +80,8 @@
 
 | Action | Method |
 |--------|--------|
-| Open popup with page context | Click the floating Last.fm icon (bottom-left) or press Ctrl+Shift+E |
+| Open popup with page context | Click the floating Last.fm icon (bottom-left by default) or press Ctrl+Shift+E |
+| Reposition toggle button | Right-click the toggle button, use Settings > General, or run the `Cycle Popup` command from userscript manager |
 | Open popup for any link | Right-click the link, or click its hover bubble icon |
 | Open via grid card | Hover an image card and click the Last.fm bubble icon |
 | Open from scrobble rows | Click the "..." menu on any track row, then click the toolbox entry |
@@ -114,11 +116,11 @@ Example: `https://mysite.com/search?q={query}`
 
 | Tab | Options |
 |-----|---------|
-| **General** | Hover & grid icons, Open All links, Light mode, Default Open Mode |
+| **General** | Hover & grid icons, Open All links, Light mode, Default Open Mode, Toggle Position, Menu Close Behavior |
 | **Sections** | Show/hide entire categories (Databases, Streaming, etc.) |
-| **AI** | AI open mode (popup window or new tab) |
+| **AI** | AI open mode (popup window or new tab), Default AI Provider, Custom Instruction Suffix |
 | **Custom** | Add/edit/remove custom service URLs |
-| **Advanced** | Reserved for future use |
+| **Advanced** | Export/Import settings, Reset to defaults |
 
 ---
 
@@ -133,7 +135,22 @@ Example: `https://mysite.com/search?q={query}`
 ## Changelog
 
 <details>
-<summary>v4 (2026-06-11) — Current release</summary>
+<summary>v5 (2026-06-27) — Current release</summary>
+
+- **Toggle Button Positioning**: Reposition the toggle button to Top Left, Top Right, Bottom Left, or Bottom Right (via right-click, Settings, or the userscript command menu).
+- **Fixed Header Compatibility**: Top button positions are aligned to `top: 75px` to clear the fixed Last.fm header bar.
+- **Z-Index Improvements**: Increased z-index to `99999999` to ensure the button/menu sits above all page UI and cookie toggles.
+- **Menu Bottom Alignment**: The menu remains bottom-aligned (left-to-right movement only) for a consistent layout.
+- **Open Toolbox in Settings**: Added an "Open Toolbox" button directly in the Settings modal header.
+- **Settings Modal Polish**: Set modal box to a fixed `650px` width by `650px` height. Inner panels are scrollable while tabs and the title header remain fixed.
+- **Unified Visual Style**: Added a custom `CONFIG` badge (which adapts in light/dark modes) and styled tabs as custom outline pills.
+- **Advanced Preference Actions**: Implemented settings backup operations (Export to clipboard, Import from clipboard, and Reset preferences to defaults).
+- **Userscript Manager Command Integration**: Registered `Toggle`, `Settings`, and `Cycle Popup` commands in Violentmonkey/Tampermonkey.
+
+</details>
+
+<details>
+<summary>v4 (2026-06-11)</summary>
 
 - Light & dark mode with CSS custom properties
 - Settings modal with tabs (General, Sections, AI, Custom, Advanced)
