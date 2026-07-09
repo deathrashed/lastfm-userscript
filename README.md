@@ -80,13 +80,34 @@ The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMus
 
 ## Installation
 
-1. Install a userscript manager:
-   - [Tampermonkey](https://www.tampermonkey.net/) (Chrome, Edge, Firefox, Safari)
-   - [Violentmonkey](https://violentmonkey.github.io/) (Firefox, Chrome)
+### Prerequisite: Userscript Manager
 
-2. Click **Install this script** on Greasy Fork:
+Install a userscript manager before proceeding:
 
-   <p><a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox"><img src="https://img.shields.io/badge/Install%20on-Greasy%20Fork-DA2323?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Install"></a></p>
+- [Tampermonkey](https://www.tampermonkey.net/) — Chrome, Edge, Firefox, Safari
+- [Violentmonkey](https://violentmonkey.github.io/) — Chrome, Edge, Firefox, Opera
+- [Greasemonkey](https://www.greasespot.net/) — Firefox only
+
+### Installation Methods
+
+### Greasy Fork
+
+<a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox">
+  <img src="https://img.shields.io/badge/Install%20on-Greasy%20Fork-DA2323?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Install on Greasy Fork">
+</a>
+
+1. Recommended easy installation: visit the [Greasy Fork page](https://greasyfork.org/en/scripts/563609-last-fm-toolbox) in your browser.
+2. Click **Install this script** on the Greasy Fork page.
+
+### GitHub Repository
+
+<a href="https://github.com/deathrashed/lastfm-userscript">
+  <img src="https://img.shields.io/badge/Clone/Fork-GitHub%20Repo-9839c3?style=for-the-badge&logo=github&logoColor=white" alt="Clone or Fork on GitHub">
+</a>
+
+1. Clone or fork the [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript) repository.
+2. Drag and drop `lastfm-toolbox.user.js` into your userscript manager, or copy and paste the raw file contents.
+
 
 ---
 
