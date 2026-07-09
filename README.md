@@ -30,16 +30,27 @@
 
 ## Installation
 
-### Greasy Fork
+### Prerequisite: Userscript Manager
+
+Install a userscript manager before proceeding:
+
+- [Tampermonkey](https://www.tampermonkey.net/) — Chrome, Edge, Firefox, Safari
+- [Violentmonkey](https://violentmonkey.github.io/) — Brave, Edge, Firefox, Opera
+- [Greasemonkey](https://www.greasespot.net/) — Firefox
+- [ScriptCat](https://scriptcat.org/en) — Chrome, Edge, Firefox
+
+Choose one of the following methods:
+
+### Method 1: Install via Greasy Fork (Recommended)
 
 <a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox">
   <img src="https://img.shields.io/badge/Install%20on-Greasy%20Fork-DA2323?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Install on Greasy Fork">
 </a>
 
-1. Recommended easy installation: visit the [Greasy Fork page](https://greasyfork.org/en/scripts/563609-last-fm-toolbox) in your browser.
-2. Click **Install this script** on the Greasy Fork page.
+1. Visit the [Greasy Fork page](https://greasyfork.org/en/scripts/563609-last-fm-toolbox) in your browser.
+2. Click **Install this script**.
 
-### GitHub Repository
+### Method 2: Install via GitHub Repository
 
 <a href="https://github.com/deathrashed/lastfm-userscript">
   <img src="https://img.shields.io/badge/Clone/Fork-GitHub%20Repo-9839c3?style=for-the-badge&logo=github&logoColor=white" alt="Clone or Fork on GitHub">
@@ -48,89 +59,226 @@
 1. Clone or fork the [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript) repository.
 2. Drag and drop `lastfm-toolbox.user.js` into your userscript manager, or copy and paste the raw file contents.
 
-
-#### **Prerequisite**: *Userscript Manager*
-- [Tampermonkey](https://www.tampermonkey.net/) — Chrome, Edge, Firefox, Safari
-- [Violentmonkey](https://violentmonkey.github.io/) — Brave, Edge, Firefox, Opera
-- [Greasemonkey](https://www.greasespot.net/) — Firefox
-- [ScriptCat](https://scriptcat.org/en) — Chrome, Edge, Firefox
-
 ## Features
 
-- **Context-Aware Popup** — right-click any music link or click the hover bubble icon to open a toolbox pre-loaded with the correct artist, album, or track
-- **60 Services across 8 categories** — Databases, Streaming, Lyrics, Covers & Images, Social Media, Utilities, **LFM Tools** (Last.fm-specific), and AI
-- **Inline Sub-Actions** — Google exposes Images / Video / AI Mode shortcuts; Album of the Year exposes Tags / Lists / Global Search shortcuts; TheAudioDB exposes JSON download and Markdown download buttons
-- **AI Prompt Modal** — context-aware presets in 5 categories (Overview, Analysis, Discovery, Historical, Technical), per-preset overrides per context type, 8 AI providers, Default Provider + Default Category settings, Auto-Copy setting, and Copy / Open / Copy & Open actions
-- **Inline Toolbox Toggle** — choose Bubble (default), Minimal (transparent floating icon), or Highlight-Only (no inline icons; eligible links highlight on hover instead)
-- **Hover Highlight** — independent toggle that turns eligible text and grid links red on hover to denote right-click capacity; uses strict `> a` child selectors so play counts and subtitle lines are not affected
-- **Granular Per-Service Visibility** — every individual service has its own 14×14 px checkmark toggle in the Sections tab (3-column card layout per category); a per-category Open All sub-toggle replaces the old global switch and defaults to off
-- **Last.fm Username Setting** — drives dynamic profile URLs for the LFM Tools category (Bijou, Stats, Live Dashboard, Explr, TapMusic, Time Capsule)
-- **Light & Dark Mode** — toggle from Settings or the footer icon; persists in localStorage; sun/moon icon stays in sync
-- **Power-User JSON Editor** — live serialisation of every `setting-*`, `musicengine.*`, and `lfm-custom-services` key inside the Advanced tab; Apply Live Edits clears and rewrites the entire scope from the parsed JSON
-- **Export / Import / Reset** — download a `.json` backup, paste JSON to restore, or reset to defaults (preserves the custom services list)
-- **Link Opening Behavior** — services default to opening in a new browser tab; switch to a centered popup window in Settings
-- **Customizable Positioning** — move the toggle button to any of the 4 corners via right-click, Settings, or the userscript manager command
-- **Menu Close Behavior** — Close on Select (default), Keep Open, or Auto-Close with a configurable delay (1–60 seconds)
-- **Track Support** — full context detection for `/music/Artist/_/Track` pages and links; AI prompts adapt for tracks
-- **Manual Search** — set context manually via `Artist`, `Artist - Album`, or `Artist - Album - Track` formats; `fa-question` info icon inside the search box toggles a popup listing accepted formats
-- **Custom Services** — add your own URLs with `{artist}`, `{album}`, `{track}`, `{query}`, `{type}` template variables
-- **Collapsible Categories** — all sections collapse/expand; state persisted in localStorage
-- **Keyboard Shortcuts** — `Ctrl+Shift+E` to toggle the popup; `Esc` to close the popup or any modal
-- **Chartlist Integration** — the "..." menu on scrobble rows includes a toolbox entry
-- **SPA Navigation** — title-mutation observer re-detects context on pushState navigation
-- **Debounced MutationObserver** — 250 ms debounce batches DOM mutations to prevent main-thread jank; visibilitychange handler re-injects on tab refocus
-- **Userscript Manager Commands** — Toggle, Settings, and Cycle Popup registered in Tampermonkey/Violentmonkey
-- **Toast Notifications** — auto-dismissing overlay replaces `alert()` / `prompt()` for all settings actions
-- **Accessibility** — `prefers-reduced-motion` disables animations and transitions
-- **Security** — `rel="noopener noreferrer"` on every `window.open` call
-
-
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Popup &amp; Navigation</h3>
+      <ul>
+        <li><b>Context-Aware Popup</b> — right-click any music link or click the hover bubble icon</li>
+        <li><b>SPA Navigation</b> — title-mutation observer re-detects context on pushState navigation</li>
+        <li><b>Chartlist Integration</b> — the "..." menu on scrobble rows includes a toolbox entry</li>
+        <li><b>Keyboard Shortcuts</b> — <code>Ctrl+Shift+E</code> to toggle; <code>Esc</code> to close</li>
+        <li><b>Debounced MutationObserver</b> — 250 ms debounce batches DOM mutations; visibilitychange handler re-injects on tab refocus</li>
+        <li><b>Collapsible Categories</b> — all sections collapse/expand; state persisted in localStorage</li>
+        <li><b>Menu Close Behavior</b> — Close on Select (default), Keep Open, or Auto-Close with a configurable delay (1–60 seconds)</li>
+        <li><b>Track Support</b> — full context detection for <code>/music/Artist/_/Track</code> pages and links; AI prompts adapt for tracks</li>
+      </ul>
+      <h3>Services &amp; Search</h3>
+      <ul>
+        <li><b>60 Services across 8 categories</b> — Databases, Streaming, Lyrics, Covers &amp; Images, Social Media, Utilities, LFM Tools, and AI</li>
+        <li><b>Inline Sub-Actions</b> — Google exposes Images / Video / AI Mode; Album of the Year exposes Tags / Lists / Global Search; TheAudioDB exposes JSON / Markdown downloads</li>
+        <li><b>AI Prompt Modal</b> — context-aware presets in 5 categories (Overview, Analysis, Discovery, Historical, Technical), per-preset overrides per context type, 8 AI providers, Copy / Open / Copy &amp; Open actions</li>
+        <li><b>Manual Search</b> — set context manually via <code>Artist</code>, <code>Artist - Album</code>, or <code>Artist - Album - Track</code> formats; <code>fa-question</code> info icon toggles a popup listing accepted formats</li>
+        <li><b>Custom Services</b> — add your own URLs with <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, <code>{query}</code>, <code>{type}</code> template variables</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>UI &amp; Display</h3>
+      <ul>
+        <li><b>Light &amp; Dark Mode</b> — toggle from Settings or the footer icon; persists in localStorage; sun/moon icon stays in sync</li>
+        <li><b>Inline Toolbox Toggle</b> — choose Bubble (default), Minimal (transparent floating icon), or Highlight-Only (no inline icons; eligible links highlight on hover)</li>
+        <li><b>Hover Highlight</b> — independent toggle that turns eligible text and grid links red on hover; uses strict <code>&gt; a</code> child selectors so play counts and subtitle lines are not affected</li>
+        <li><b>Customizable Positioning</b> — move the toggle button to any of the 4 corners via right-click, Settings, or the userscript manager command</li>
+        <li><b>Toast Notifications</b> — auto-dismissing overlay replaces <code>alert()</code> / <code>prompt()</code> for all settings actions</li>
+        <li><b>Last.fm Username Setting</b> — drives dynamic profile URLs for the LFM Tools category (Bijou, Stats, Live Dashboard, Explr, TapMusic, Time Capsule)</li>
+        <li><b>Granular Per-Service Visibility</b> — every individual service has its own 14×14 px checkmark toggle in the Sections tab (3-column card layout per category); a per-category Open All sub-toggle replaces the old global switch and defaults to off</li>
+      </ul>
+      <h3>Advanced &amp; Security</h3>
+      <ul>
+        <li><b>Power-User JSON Editor</b> — live serialisation of every <code>setting-*</code>, <code>musicengine.*</code>, and <code>lfm-custom-services</code> key inside the Advanced tab; Apply Live Edits clears and rewrites the entire scope from the parsed JSON</li>
+        <li><b>Export / Import / Reset</b> — download a <code>.json</code> backup, paste JSON to restore, or reset to defaults (preserves the custom services list)</li>
+        <li><b>Link Opening Behavior</b> — services default to opening in a new browser tab; switch to a centered popup window in Settings</li>
+        <li><b>Userscript Manager Commands</b> — Toggle, Settings, and Cycle Popup registered in Tampermonkey/Violentmonkey</li>
+        <li><b>Accessibility</b> — <code>prefers-reduced-motion</code> disables animations and transitions</li>
+        <li><b>Security</b> — <code>rel="noopener noreferrer"</code> on every <code>window.open</code> call</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ## Services
 
-| Category | Services |
-|----------|----------|
-| **Primary** | Search (Google), Listen (Monochrome), AI Prompt |
-| **Databases** (11) | [Google](https://www.google.com/) (+ Images / Video / AI Mode), [TheAudioDB](https://www.theaudiodb.com/) (smart resolution + JSON/MD downloads), [Metal Archives](https://www.metal-archives.com/), [Rate Your Music](https://rateyourmusic.com/), [Discogs](https://www.discogs.com/), [MusicBrainz](https://musicbrainz.org/), [Wikipedia](https://en.wikipedia.org/), [Album of the Year](https://www.albumoftheyear.org/) (+ Tags / Lists / Global Search), [AllMusic](https://www.allmusic.com/), [ListenBrainz](https://listenbrainz.org/), [Every Noise at Once](https://everynoise.com/) |
-| **Streaming** (12) | [Spotify](https://open.spotify.com/), [YouTube](https://www.youtube.com/), [YouTube Music](https://music.youtube.com/), [Apple Music](https://music.apple.com/), [Bandcamp](https://bandcamp.com/), [SoundCloud](https://soundcloud.com/), [Deezer](https://www.deezer.com/), [Tidal](https://tidal.com/), [Qobuz](https://www.qobuz.com/), [Amazon Music](https://music.amazon.com/), [Audiomack](https://audiomack.com/), [Monochrome](https://monochrome.tf/) |
-| **Lyrics** (4) | [Genius](https://genius.com/), [DarkLyrics](http://www.darklyrics.com/), [Google](https://www.google.com/), [Musixmatch](https://www.musixmatch.com/) |
-| **Covers & Images** (5) | [COV MusicHoarders](https://covers.musichoarders.xyz/), [Google Images](https://images.google.com/), [Yahoo Images](https://images.search.yahoo.com/), [Bing Images](https://www.bing.com/images/search), [Fanart.tv](https://fanart.tv/) |
-| **Social Media** (4) | [Instagram](https://www.instagram.com/), [Facebook](https://www.facebook.com/), [Reddit](https://www.reddit.com/), [X (Twitter)](https://x.com/) |
-| **Utilities** (8) | [Chosic](https://www.chosic.com/), [Spirit of Metal](https://www.spirit-of-metal.com/), [Metal Storm](https://metalstorm.net/), [Lucida](https://lucida.to/), [Sputnikmusic](https://www.sputnikmusic.com/), [Audio Archive](https://archive.org/), [WhoSampled](https://www.whosampled.com/), [MusicMap](https://musicmap.info/) |
-| **LFM Tools** (8) | [Bijou](https://www.bijou.fm/), [Stats](https://lastfmstats.com/), [Live Dashboard](https://lastfm.live/), [Explr.fm - Regions](https://mold.github.io/explr/), [TapMusic - Collage](https://www.tapmusic.net/), [Universal Scrobbler](https://universalscrobbler.com/), [Time Capsule](https://bxh9261.github.io/last-fm-time-capsule/), [Manual Scrobbler](https://www.bijou.fm/manual-scrobbler) |
-| **AI** (8) | [Perplexity](https://www.perplexity.ai/), [ChatGPT](https://chatgpt.com/), [Claude](https://claude.ai/), [Brave AI](https://search.brave.com/ask), [Mistral](https://chat.mistral.ai/), [HuggingChat](https://huggingface.co/chat/), [You.com](https://you.com/), [Grok](https://grok.com/) |
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <details>
+        <summary><b>Primary</b></summary>
+        <p>Search (Google), Listen (Monochrome), AI Prompt</p>
+      </details>
+      <details>
+        <summary><b>Databases</b> <small>(11)</small></summary>
+        <p>
+          <a href="https://www.google.com/">Google</a> <small>(Images / Video / AI Mode)</small> ·
+          <a href="https://www.theaudiodb.com/">TheAudioDB</a> <small>(smart resolution + JSON/MD downloads)</small> ·
+          <a href="https://www.metal-archives.com/">Metal Archives</a> ·
+          <a href="https://rateyourmusic.com/">Rate Your Music</a> ·
+          <a href="https://www.discogs.com/">Discogs</a> ·
+          <a href="https://musicbrainz.org/">MusicBrainz</a> ·
+          <a href="https://en.wikipedia.org/">Wikipedia</a> ·
+          <a href="https://www.albumoftheyear.org/">Album of the Year</a> <small>(Tags / Lists / Global Search)</small> ·
+          <a href="https://www.allmusic.com/">AllMusic</a> ·
+          <a href="https://listenbrainz.org/">ListenBrainz</a> ·
+          <a href="https://everynoise.com/">Every Noise at Once</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>Streaming</b> <small>(12)</small></summary>
+        <p>
+          <a href="https://open.spotify.com/">Spotify</a> ·
+          <a href="https://www.youtube.com/">YouTube</a> ·
+          <a href="https://music.youtube.com/">YouTube Music</a> ·
+          <a href="https://music.apple.com/">Apple Music</a> ·
+          <a href="https://bandcamp.com/">Bandcamp</a> ·
+          <a href="https://soundcloud.com/">SoundCloud</a> ·
+          <a href="https://www.deezer.com/">Deezer</a> ·
+          <a href="https://tidal.com/">Tidal</a> ·
+          <a href="https://www.qobuz.com/">Qobuz</a> ·
+          <a href="https://music.amazon.com/">Amazon Music</a> ·
+          <a href="https://audiomack.com/">Audiomack</a> ·
+          <a href="https://monochrome.tf/">Monochrome</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>Lyrics</b> <small>(4)</small></summary>
+        <p>
+          <a href="https://genius.com/">Genius</a> ·
+          <a href="http://www.darklyrics.com/">DarkLyrics</a> ·
+          <a href="https://www.google.com/">Google</a> ·
+          <a href="https://www.musixmatch.com/">Musixmatch</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>Covers &amp; Images</b> <small>(5)</small></summary>
+        <p>
+          <a href="https://covers.musichoarders.xyz/">COV MusicHoarders</a> ·
+          <a href="https://images.google.com/">Google Images</a> ·
+          <a href="https://images.search.yahoo.com/">Yahoo Images</a> ·
+          <a href="https://www.bing.com/images/search">Bing Images</a> ·
+          <a href="https://fanart.tv/">Fanart.tv</a>
+        </p>
+      </details>
+    </td>
+    <td width="50%" valign="top">
+      <details>
+        <summary><b>Social Media</b> <small>(4)</small></summary>
+        <p>
+          <a href="https://www.instagram.com/">Instagram</a> ·
+          <a href="https://www.facebook.com/">Facebook</a> ·
+          <a href="https://www.reddit.com/">Reddit</a> ·
+          <a href="https://x.com/">X (Twitter)</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>Utilities</b> <small>(8)</small></summary>
+        <p>
+          <a href="https://www.chosic.com/">Chosic</a> ·
+          <a href="https://www.spirit-of-metal.com/">Spirit of Metal</a> ·
+          <a href="https://metalstorm.net/">Metal Storm</a> ·
+          <a href="https://lucida.to/">Lucida</a> ·
+          <a href="https://www.sputnikmusic.com/">Sputnikmusic</a> ·
+          <a href="https://archive.org/">Audio Archive</a> ·
+          <a href="https://www.whosampled.com/">WhoSampled</a> ·
+          <a href="https://musicmap.info/">MusicMap</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>LFM Tools</b> <small>(8)</small></summary>
+        <p>
+          <a href="https://www.bijou.fm/">Bijou</a> ·
+          <a href="https://lastfmstats.com/">Stats</a> ·
+          <a href="https://lastfm.live/">Live Dashboard</a> ·
+          <a href="https://mold.github.io/explr/">Explr.fm - Regions</a> ·
+          <a href="https://www.tapmusic.net/">TapMusic - Collage</a> ·
+          <a href="https://universalscrobbler.com/">Universal Scrobbler</a> ·
+          <a href="https://bxh9261.github.io/last-fm-time-capsule/">Time Capsule</a> ·
+          <a href="https://www.bijou.fm/manual-scrobbler">Manual Scrobbler</a>
+        </p>
+      </details>
+      <details>
+        <summary><b>AI</b> <small>(8)</small></summary>
+        <p>
+          <a href="https://www.perplexity.ai/">Perplexity</a> ·
+          <a href="https://chatgpt.com/">ChatGPT</a> ·
+          <a href="https://claude.ai/">Claude</a> ·
+          <a href="https://search.brave.com/ask">Brave AI</a> ·
+          <a href="https://chat.mistral.ai/">Mistral</a> ·
+          <a href="https://huggingface.co/chat/">HuggingChat</a> ·
+          <a href="https://you.com/">You.com</a> ·
+          <a href="https://grok.com/">Grok</a>
+        </p>
+      </details>
+    </td>
+  </tr>
+</table>
 
 The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMusic) plus Time Capsule auto-fill the username from the **Last.fm Username** setting in the General tab.
 
-
-
-
-
 ## Usage
 
-| Action | Method |
-|--------|--------|
-| Open popup with page context | Click the floating Last.fm icon (bottom-left by default) or press `Ctrl+Shift+E` |
-| Reposition toggle button | Right-click the toggle button, use Settings > General > Toggle Position, or run the `Cycle Popup` userscript manager command |
-| Open popup for any link | Right-click the link, or click its hover bubble icon |
-| Open via grid card | Hover an image card and click the Last.fm bubble icon |
-| Open from scrobble rows | Click the "..." menu on any track row, then click the toolbox entry |
-| Search manually | Expand **Manual Search** and type `Artist`, `Artist - Album`, or `Artist - Album - Track` (click the `?` icon in the search box for help) |
-| Open all services in a category | Click the **Open All** link at the bottom of any section (must be enabled per-category in Settings > Sections; hidden by default) |
-| Open a single service | Click the service row (opens via Popup or Tab per Link Opening Behavior) |
-| Force a new tab | Hover the service row and click the **+** button |
-| Open Google / AOTY sub-actions | Click the inline action icons next to the service row (Images, Video, AI Mode, Tags, Lists, Global Search) |
-| Download TheAudioDB data | Click the `</>` (JSON) or Markdown icon next to TheAudioDB |
-| Open AI prompt modal | Click the **AI** quick action button in the popup header, or the flask icon next to any AI provider row |
-| Use AI presets | Pick a Category (Overview / Analysis / Discovery / Historical / Technical), pick a Prompt Preset, edit if needed, then Copy / Open / Copy & Open |
-| Toggle light/dark mode | Click the sun/moon icon in the footer, or go to Settings > General > Color Theme Mode |
-| Open Settings | Click the gear icon in the footer, or use the `Settings` userscript manager command |
-| Add a custom service | Go to Settings > Custom, fill in Label + URL with `{artist}`, `{album}`, `{track}`, `{query}`, `{type}` |
-| Hide a single service | Go to Settings > Sections and uncheck the small box next to the service name |
-| Show Open All for one category only | Go to Settings > Sections and check the "Open All" box at the bottom of that category card |
-| Edit raw settings JSON | Go to Settings > Advanced, edit the JSON in the power-user editor, click **Apply Live Edits** |
-| Backup / restore settings | Settings > Advanced > Export (downloads `.json`) / Import (paste JSON) / Reset |
-| Close menu or modal | Press `Esc` |
+<details>
+  <summary><b>Open the Toolbox</b></summary>
+  <ul>
+    <li>Click the floating Last.fm icon (bottom-left by default), or press <code>Ctrl+Shift+E</code></li>
+    <li>Right-click any music link, or click its hover bubble icon</li>
+    <li>Hover an image card and click the Last.fm bubble icon</li>
+    <li>Click the "..." menu on any track row in the chartlist</li>
+    <li>Press <code>Esc</code> to close any open menu or modal</li>
+  </ul>
+</details>
+
+<details>
+  <summary><b>Services &amp; Search</b></summary>
+  <ul>
+    <li><b>Open a single service</b> — click the row (opens via Popup or Tab per Link Opening Behavior)</li>
+    <li><b>Force a new tab</b> — hover the service row and click the <b>+</b> button</li>
+    <li><b>Open all services in a category</b> — click the <b>Open All</b> link at the bottom of any section (must be enabled per-category in Settings &gt; Sections; hidden by default)</li>
+    <li><b>Search manually</b> — expand <b>Manual Search</b> and type <code>Artist</code>, <code>Artist - Album</code>, or <code>Artist - Album - Track</code> (click the <code>?</code> icon in the search box for help)</li>
+    <li><b>Google / AOTY sub-actions</b> — click the inline action icons next to the service row (Images, Video, AI Mode, Tags, Lists, Global Search)</li>
+    <li><b>Download TheAudioDB data</b> — click the <code>&lt;/&gt;</code> (JSON) or Markdown icon next to TheAudioDB</li>
+  </ul>
+</details>
+
+<details>
+  <summary><b>AI Prompt Modal</b></summary>
+  <ul>
+    <li>Open via the <b>AI</b> quick action button in the popup header, or the flask icon next to any AI provider row</li>
+    <li>Pick a <b>Category</b> (Overview / Analysis / Discovery / Historical / Technical), then a <b>Prompt Preset</b></li>
+    <li>Edit if needed, then choose <b>Copy</b>, <b>Open</b>, or <b>Copy &amp; Open</b></li>
+    <li>Modified presets are marked with ✎ in the AI modal's dropdown</li>
+  </ul>
+</details>
+
+<details>
+  <summary><b>Customize &amp; Configure</b></summary>
+  <ul>
+    <li><b>Toggle light/dark mode</b> — click the sun/moon icon in the footer, or go to Settings &gt; General &gt; Color Theme Mode</li>
+    <li><b>Add a custom service</b> — go to Settings &gt; Custom, fill in Label + URL with <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, <code>{query}</code>, <code>{type}</code></li>
+    <li><b>Hide a single service</b> — go to Settings &gt; Sections and uncheck the small box next to the service name</li>
+    <li><b>Show Open All for one category only</b> — go to Settings &gt; Sections and check the "Open All" box at the bottom of that category card</li>
+    <li><b>Reposition toggle button</b> — right-click the toggle button, use Settings &gt; General &gt; Toggle Position, or run the <code>Cycle Popup</code> userscript manager command</li>
+  </ul>
+</details>
+
+<details>
+  <summary><b>Advanced</b></summary>
+  <ul>
+    <li><b>Edit raw settings JSON</b> — go to Settings &gt; Advanced, edit the JSON in the power-user editor, click <b>Apply Live Edits</b></li>
+    <li><b>Backup / restore settings</b> — Settings &gt; Advanced &gt; Export (downloads <code>.json</code>) / Import (paste JSON) / Reset</li>
+    <li><b>Open Settings</b> — click the gear icon in the footer, or use the <code>Settings</code> userscript manager command</li>
+  </ul>
+</details>
 
 ---
 
@@ -185,10 +333,16 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ## Limitations
 
-- The AI prompt modal generates prompts and opens provider URLs; it does not make API calls or scrape AI websites
-- TheAudioDB uses the free API key `123`; if the key changes, update `SERVICE_URLS["theaudiodb-link"]` in the source
-- If a service changes its search URL format, links may break — report it via GitHub issues
-- Zero tracking, no ads, pure client-side JS with localStorage for preferences
+> **Privacy**: Zero tracking, no ads — pure client-side JS with `localStorage` for preferences.
+
+<details>
+  <summary><b>Known Constraints</b></summary>
+  <ul>
+    <li>The AI prompt modal generates prompts and opens provider URLs; it does not make API calls or scrape AI websites</li>
+    <li>TheAudioDB uses the free API key <code>123</code>; if the key changes, update <code>SERVICE_URLS["theaudiodb-link"]</code> in the source</li>
+    <li>If a service changes its search URL format, links may break — report it via GitHub issues</li>
+  </ul>
+</details>
 
 ---
 
