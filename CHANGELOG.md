@@ -1,3 +1,66 @@
+### v6 — 2026-09-06
+- **AI Prompts Overhauled**: Replaced all `AI_CATEGORIES` presets with structured XML-tagged prompts (`<role>`/`<task>`/`<constraints>`/`<output_format>`). Categories reorganized: Overview (Summary, Guide, Timeline, Commercial), Analysis (Theory, Lyrics, Sonic, Technical, Vocals), Discovery (Niche, Samples, Playlist, Live), Context (Impact, Lore, Aesthetics, Trivia, Philosophy) — replaces the old Overview/Analysis/Discovery/Historical/Technical set
+- **Fix**: TheAudioDB JSON download no longer saves a near-empty `{"artists": null}` file when no match is found — shows a toast instead
+- **Settings AI/Info Cohesion**: New shared `.settings-card` primitive; Prompt Preview & Editor and Custom Instructions now use consistent card styling and typography
+- **UI**: Replaced heavy settings-group background cards with subtle dividers and border-only hover highlights; `Sections` tab visual style preserved
+- **Fix**: AI prompt modal action buttons no longer overflow; the `Copy & Open` button displays correctly
+- **Fix**: Settings modal now opens with the General tab content visible by default
+- **Info Tab**: Removed the standalone "Did you know?" tip and consolidated Recommended Resources into the Info tab
+- **New Docs Tab**: In-app reference tab in Settings covering shortcuts, right-click hooks, search formats, sections, service rows, TheAudioDB, AI generator, menu behavior, and troubleshooting
+- **Category Reorganization**: AllMusic moved to Databases, Fanart.tv moved to Covers & Images, Additional category renamed to Utilities
+- **New Services**: TheAudioDB (with webpage resolution, JSON download, and Markdown download), ListenBrainz (context-aware search per type), Monochrome in Streaming, X (Twitter) in Social Media
+- **TheAudioDB Smart Resolution**: Clicking the service link fetches the API JSON, extracts the artist ID, and redirects to the actual visual webpage. Also includes dedicated buttons to download raw JSON or formatted Markdown files.
+- **Icon Updates**: Tidal (`fa-water`), Grok (`fa-x-twitter`), Search quick action (`fa-search`), plus icons for all new services
+- **Manual Search Info Popup**: Replaced text with a `fa-question` icon inside the search box that toggles a small popup above showing accepted formats
+- **AI Provider Popup Toggle**: Each AI service now has a robot icon button that opens the AI prompt modal with that provider pre-selected
+- **Settings Modal Redesign**: Vertical collapsible sidebar tabs (icon-only or expanded), centered "Settings" title (22px), footer showing current tab name, less button padding, improved hover/active states, Open Toolbox button removed
+- **Menu Close Behavior**: New setting with three options — Close on Select (default), Keep Open, Auto-close (3s)
+- **Open All Off by Default**: Open All links are now hidden by default; must be enabled in Settings > Sections
+- **Light/Dark Icon Sync**: Toggling light mode via settings modal now also updates the footer sun/moon icon
+- **Toast Notifications**: Replaced all `alert()`/`prompt()` calls with an auto-dismissing toast overlay for settings actions
+- **CSS Cleanup**: Removed duplicate `#external-music-menu a` rule; scrollbar colors now use CSS variables (`--scrollbar-bg`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`)
+- **Security Fixes**: Added `rel="noopener noreferrer"` to all `window.open` calls; fixed Amazon Music domain (`.com.au` → `.com`)
+- **Performance**: Removed redundant `setInterval` (3s) and `setTimeout` (2s) — MutationObserver + visibilitychange handler suffice
+- **AOTY Sub-Actions**: Album of the Year row now exposes three inline action buttons — Tags (`fa-tags`), Lists (`fa-list`), and Global Search (`fa-earth-europe`) — mirroring Google's quick-action pattern
+- **Google Sub-Actions**: Google row exposes inline quick actions for Images (`fa-image`), Video (`fa-video`), and AI Mode (`fa-flask`)
+- **LFM Tools Category**: New 8th category dedicated to Last.fm-specific profile and scrobble tools — Bijou, Stats (lastfmstats.com), Live Dashboard (lastfm.live), Explr.fm - Regions, TapMusic - Collage, Universal Scrobbler, Time Capsule, and Manual Scrobbler. The five profile tools auto-fill the username from the new "Last.fm Username" general setting
+- **Every Noise at Once**: New database service with type-aware URL routing (track/album/artist modes)
+- **MusicMap**: New utilities service (musicmap.info)
+- **60 Total Services** across 8 categories (Databases, Streaming, Lyrics, Covers & Images, Social Media, Utilities, LFM Tools, AI)
+- **Last.fm Username Setting**: A new General settings field (`setting-lfm-username`) that drives the dynamic profile URLs for Bijou, Stats, Live Dashboard, Explr, TapMusic, and Time Capsule
+- **Inline Toolbox Toggle**: New General dropdown replacing the binary on/off toggle — choose Bubble (default), Minimal (transparent floating icon), or Highlight Only (no inline icons; eligible links highlight on hover instead)
+- **Hover Highlight**: A new General toggle (separate from the inline-icon toggle) that turns eligible text/grid links red on hover to denote right-click capability. Activates automatically when the inline toggle is set to "Highlight Only"
+- **Strict Grid Targeting**: The hover-highlight layer now uses explicit child selectors (`> a`) and main-text wrappers so play counts, subtitles, and metadata lines in album/artist grids are no longer highlighted
+- **Granular Per-Service Visibility**: The Sections tab now renders a 3-column card layout per category, with a small 14×14px checkmark toggle next to every individual service. Each service can be hidden independently (`setting-svc-hidden-{id}`), and a per-category "Open All" toggle (`setting-openall-{cat}`) replaces the old global Open All switch
+- **Power-User JSON Editor**: The Advanced tab has been redesigned into a maximized monospace JSON editor with thin-profile action buttons. The editor live-serializes all `setting-`/`musicengine.`/`lfm-custom-services` keys (with auto-refresh while no field is focused), and the Apply Live Edits button clears and rewrites the entire configuration scope from the parsed JSON
+- **Export/Import/Reset Scope Fix**: All three Advanced actions now correctly include every key starting with `setting-` (covering the new `setting-svc-hidden-*`, `setting-openall-*`, `setting-ai-*`, `setting-close-delay`, and `setting-lfm-username` keys). Export downloads a `.json` file; Import accepts pasted JSON and reloads; Reset preserves `lfm-custom-services`
+- **Info Tab**: New settings tab with the script version, Greasy Fork / GitHub / Issue-tracker links, a "Did you know?" tip about right-clicking links, and a Recommended Resources section linking out to Bijou and the Last.fm Artwork Upload Helper
+- **AI Auto-Copy Setting**: New AI tab toggle (`setting-ai-autocopy`) — when enabled, the Open button automatically copies the prompt to the clipboard before launching the provider
+- **AI Default Category Setting**: New AI tab dropdown (`setting-default-ai-category`) that preselects the prompt category in the AI modal (Overview, Analysis, Discovery, Historical, or Technical)
+- **AI Prompt Preset Overrides**: The AI tab now includes a Prompt Preview & Editor that lets you customize individual preset prompts per context type (track/album/artist). Modified presets are marked with a ✎ and persist via `setting-ai-preset-override-{cat}-{idx}-{ctxType}`
+- **AI Modal Polish**: Redesigned with a centered brand-colored eyebrow header, absolute-positioned close button, gear icon jumping to the AI settings tab, and thin `.settings-tab`-style buttons (Copy, Open, Copy & Open)
+- **Checkbox Toggle Switches**: All toggle switches are now 20×20px bordered checkboxes (4px radius) showing a `fa-radiation` icon when active (parent/primary toggles) or a `fa-check` icon (sub-item toggles, 14×14px / 3px radius). Icons are hidden when inactive to keep the unchecked box empty. Icon color follows `--text-primary` so it stays white in dark mode and black in light mode
+- **Default Open Mode**: Services now default to opening in a new browser tab (`musicengine.defaultOpenMode = "tab"`) instead of a popup window
+- **Debounced MutationObserver**: Replaced the requestAnimationFrame observer pattern with a 250ms debounce timer that batches DOM mutations and prevents main-thread jank on heavily-mutating Last.fm pages
+- **Theme Variables**: Added `--brand-rgb` (218, 35, 35) for use in `rgba()` chip and active-state tints; toggle color now driven by `--brand` rather than the legacy `--toggle-off`/`--toggle-on` pair
+- **Accessibility**: `prefers-reduced-motion` continues to disable all animations and transitions
+
+### v5 — 2026-06-27
+- **Toggle Button Positioning**: The main toggle button can now be moved to Top Left, Top Right, Bottom Left, or Bottom Right of the viewport (resolving overlapping issues with browser/cookie banners).
+- **Fixed Header Compatibility**: Top button positions are aligned to `top: 75px` to fully clear the fixed Last.fm header bar.
+- **Improved Z-Index Stacking**: Raised the toggle button and menu `z-index` to prevent coverage by page elements.
+- **Menu Bottom Alignment**: The toolbox menu remains bottom-aligned (only moving left-to-right) for a consistent layout regardless of the button's vertical position.
+- **Quick Position Cycle**: Right-click (contextmenu) on the toggle button instantly cycles its position.
+- **Settings Modal Redesign**: Center-aligned modal styled consistently at a fixed `650px` width by `650px` height. Title styled with matching context-badge tags (`CONFIG`) that adapt to light and dark modes. Tab navigation features a unified outline pill styling, transitioning to red when active.
+- **Settings Scrollable Panels**: The settings body panels scroll independently (`overflow-y: auto`), keeping settings modal header and tabs pinned.
+- **Connected AI popup toggle**: Bound the missing AI popup toggle listener in the AI settings tab.
+- **Advanced Configuration Actions**: Implemented fully functional buttons in the "Advanced" tab:
+  - **Export Settings**: Copies toolbox settings to the clipboard as JSON.
+  - **Import Settings**: Restores preference states from a pasted JSON backup.
+  - **Reset to Defaults**: Resets preferences back to default configurations.
+- **Settings Modal Integration**: Added an "Open Toolbox" button in the Settings modal header.
+- **Userscript Manager Command Menu**: Registered `Toggle`, `Settings`, and `Cycle Popup` commands in Tampermonkey/Violentmonkey menus for keyboard/extension accessibility when the button is covered.
+
 ### v4 — 2026-06-11
 - Light & dark mode with CSS custom properties
 - Settings modal with tabs (General, Sections, AI, Custom, Advanced)

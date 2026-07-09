@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name           Last.fm: Toolbox
 // @namespace      https://github.com/deathrashed/lastfm-userscript
-// @description    A smart, quick-access popup for Last.fm with Font Awesome icons and 30+ external services.
+// @description     A context-aware popup with over 60 curated services across 8 categories, injected into every artist, album, and track link on Last.fm. Includes an AI prompt generator and comprehensive user controls.
 // @icon           https://cdn.icon-icons.com/icons2/808/PNG/512/lastfm_icon-icons.com_66107.png
 // @match          https://www.last.fm/*
 // @match          https://www.lastfm.*/*
 // @match          https://cn.last.fm/*
-// @version        4
+// @version        6
 // @license        MIT
 // @grant          GM_addStyle
+// @grant          GM_registerMenuCommand
 // @author         deathrashed
 // @require        https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js
 // @downloadURL    https://update.greasyfork.org/scripts/563609/Lastfm%3A%20Toolbox.user.js
@@ -38,9 +39,13 @@
       --toggle-off: #555;
       --toggle-on: #DA2323;
       --brand: #DA2323;
+      --brand-rgb: 218, 35, 35;
       --brand-hover: #FF1B20;
       --shadow: rgba(0,0,0,.3);
       --menu-shadow: rgba(0,0,0,.3);
+      --scrollbar-bg: #282828;
+      --scrollbar-thumb: #666;
+      --scrollbar-thumb-hover: #999;
     }
 
     .lfm-light-mode {
@@ -57,12 +62,13 @@
       --toggle-off: #ddd;
       --shadow: rgba(0,0,0,.12);
       --menu-shadow: rgba(0,0,0,.12);
+      --scrollbar-bg: #e5e5e5;
+      --scrollbar-thumb: #a0a0a0;
+      --scrollbar-thumb-hover: #7a7a7a;
     }
 
     #external-music-button {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
       width: 40px;
       height: 40px;
       background: var(--bg-primary);
@@ -73,7 +79,7 @@
       cursor: pointer;
       font-size: 20px;
       box-shadow: 0 2px 5px var(--shadow);
-      z-index: 9999;
+      z-index: 99999999 !important;
       transition: background .2s, color .2s;
     }
 
@@ -84,13 +90,11 @@
 
     #external-music-menu {
       position: fixed;
-      bottom: 70px;
-      left: 20px;
       background: var(--bg-primary);
       border-radius: 8px;
       box-shadow: 0 4px 16px var(--menu-shadow);
       display: none;
-      z-index: 9999;
+      z-index: 99999999 !important;
       width: 260px;
       max-height: 600px;
       direction: rtl;
@@ -105,21 +109,35 @@
     }
 
     #lfm-scroll-area::-webkit-scrollbar { width: 6px; }
-    #lfm-scroll-area::-webkit-scrollbar-track { background: #282828; }
-    #lfm-scroll-area::-webkit-scrollbar-thumb { background: #666; border-radius: 3px; }
-    #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: #999; }
+    #lfm-scroll-area::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+    #lfm-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+    #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track { background: #e5e5e5; }
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb { background: #a0a0a0; }
-    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: #7a7a7a; }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
+    .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
     #external-music-menu.visible {
       display: block;
       animation: lfmSlideUp .2s ease-out;
     }
 
+    html.lfm-toggle-bottom-left #external-music-button { top: auto; right: auto; bottom: 20px; left: 20px; }
+    html.lfm-toggle-bottom-left #external-music-menu { top: auto; right: auto; bottom: 70px; left: 20px; }
+    html.lfm-toggle-bottom-right #external-music-button { top: auto; left: auto; bottom: 20px; right: 20px; }
+    html.lfm-toggle-bottom-right #external-music-menu { top: auto; left: auto; bottom: 70px; right: 20px; }
+    html.lfm-toggle-top-left #external-music-button { bottom: auto; right: auto; top: 75px; left: 20px; }
+    html.lfm-toggle-top-left #external-music-menu { top: auto; right: auto; bottom: 20px; left: 20px; }
+    html.lfm-toggle-top-right #external-music-button { bottom: auto; left: auto; top: 75px; right: 20px; }
+    html.lfm-toggle-top-right #external-music-menu { top: auto; left: auto; bottom: 20px; right: 20px; }
+
     @keyframes lfmSlideUp {
       from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes lfmSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -184,16 +202,6 @@
       background: var(--border-color);
     }
 
-    #external-music-menu a {
-      display: block;
-      padding: 8px 15px;
-      color: var(--text-primary) !important;
-      text-decoration: none !important;
-      font-size: 13px;
-      direction: ltr;
-      transition: background .15s;
-    }
-
     #external-music-menu a i,
     #external-music-menu a svg {
       width: 18px !important;
@@ -230,59 +238,124 @@
     }
 
     .toggle-switch {
-      position: relative;
-      width: 38px;
+      width: 20px;
       height: 20px;
-      background: var(--toggle-off);
-      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      background: transparent;
       cursor: pointer;
-      transition: background .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      transition: all .15s ease;
     }
 
-    .toggle-switch.active { background: var(--toggle-on); }
+    .toggle-switch i,
+    .toggle-switch svg {
+      display: none;
+      color: var(--text-primary);
+      font-size: 15px;
+    }
+
+    .toggle-switch.active i,
+    .toggle-switch.active svg {
+      display: inline-block;
+    }
+
+    .toggle-switch:hover {
+      border-color: var(--brand);
+    }
+
+    .toggle-switch.active {
+      border-color: var(--brand);
+      background: rgba(218,35,35,.08);
+    }
 
     .toggle-switch::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      top: 2px;
-      left: 2px;
-      transition: transform .2s, background .2s;
-    }
-
-    .toggle-switch.active::after {
-      transform: translateX(18px);
-      background: #fff;
+      display: none;
     }
 
     .hidden-section { display: none !important; }
 
-    #search-input-container {
-      padding: 10px 15px;
-      display: flex;
-      justify-content: center;
-      direction: ltr;
-    }
+   #search-input-container {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: center;
+  direction: ltr;
+  position: relative;
+}
 
-    #search-input {
-      width: 170px;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 4px;
-      padding: 6px 10px;
-      color: var(--text-primary);
-      font-size: 13px;
-      transition: border-color .2s;
-    }
+#search-input-wrapper {
+  position: relative;
+  width: 170px;
+}
 
-    #search-input:focus {
-      outline: none;
-      border-color: var(--brand);
-    }
+#search-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  /* Increased right padding (28px) so typed text doesn't hide behind the ? */
+  padding: 6px 28px 6px 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: border-color .2s;
+  box-sizing: border-box;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+/* The "?" Icon */
+#search-help-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: help;
+  user-select: none;
+}
+
+#search-help-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%; /* Anchor to the horizontal center of the search bar */
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: normal;
+  z-index: 9999;
+  box-shadow: 0 4px 12px var(--shadow);
+  line-height: 1.5;
+  min-width: 240px;
+  max-width: 380px;
+  word-break: break-word;
+
+  visibility: hidden;
+  opacity: 0;
+  /* Shift left by 50% of its own width to center it, and push down 5px for the animation */
+  transform: translate(-50%, 5px);
+  transform-origin: bottom center;
+  transition: opacity .12s ease, transform .12s ease, visibility .12s;
+  pointer-events: none;
+}
+
+#search-input-wrapper:hover #search-help-popup {
+  visibility: visible;
+  opacity: 1;
+  /* Maintain the horizontal centering while sliding up to 0px */
+  transform: translate(-50%, 0);
+}
 
     .lfm-custom-form input {
       background: var(--input-bg);
@@ -416,20 +489,52 @@
     }
 
     #lfm-modal-box select,
+    #lfm-modal-box input[type="text"],
+    #lfm-modal-box input[type="number"],
     #lfm-modal-box button {
       background: var(--bg-secondary);
       border: 1px solid var(--input-border);
-      border-radius: 6px;
-      padding: 8px 12px;
+      border-radius: 4px;
+      padding: 5px 8px;
       color: var(--text-primary);
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
-      transition: background .15s;
+      transition: background .15s, border-color .15s;
+      width: 140px;
+      min-width: 140px;
+      box-sizing: border-box;
     }
 
     #lfm-modal-box select:hover,
+    #lfm-modal-box input:hover,
     #lfm-modal-box button:hover {
       background: var(--bg-hover);
+      border-color: var(--text-secondary);
+    }
+
+    #lfm-modal-box select:focus,
+    #lfm-modal-box input:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    #lfm-modal-box button {
+      width: auto;
+      min-width: auto;
+    }
+
+    /* AI Popup Specific Polish */
+    .ai-modal .modal-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    #ai-context-display {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
     }
 
     #lfm-modal-box .lfm-modal-actions {
@@ -546,14 +651,55 @@
   pointer-events: none;
 }
 
-.lfm-hide-hover-icons .lfm-hover-icon,
-.lfm-hide-hover-icons .lfm-grid-toolbox-icon {
-  display: none !important;
-}
+/* Hide inline elements globally when the select choice is 'hidden' */
+    html.lfm-icons-hidden .lfm-hover-icon,
+    html.lfm-icons-hidden .lfm-grid-toolbox-icon {
+      display: none !important;
+    }
 
-.lfm-hide-open-all .open-all-link {
-  display: none !important;
-}
+    /* Minimal Icon Override Variant */
+    html.lfm-icon-style-minimal .lfm-hover-icon,
+    html.lfm-icon-style-minimal .lfm-grid-toolbox-icon {
+      background: transparent !important;
+      box-shadow: none !important;
+      color: var(--brand) !important;
+      font-size: 14px;
+    }
+
+    /* ==========================================================================
+       TEXT & GRID HIGHLIGHT LAYER
+       Active via standard switch (.lfm-highlight-eligible)
+       OR automatically forced when inline icons are hidden (.lfm-icons-hidden)
+       ========================================================================== */
+
+    /* 1. Standard inline text links turn red with an underline */
+    html.lfm-highlight-eligible a.lfm-toolbox-enabled:hover,
+    html.lfm-icons-hidden a.lfm-toolbox-enabled:hover {
+      color: var(--brand) !important;
+      text-decoration: underline !important;
+    }
+
+    /* 2. Albums Grid Layout: Strictly target title nodes. Do not highlight play counts or artist subtexts */
+    html.lfm-highlight-eligible .grid-items-item-main-text > a:hover,
+    html.lfm-icons-hidden .grid-items-item-main-text > a:hover,
+    html.lfm-highlight-eligible .resource-list--release-list-item-main-text > a:hover,
+    html.lfm-icons-hidden .resource-list--release-list-item-main-text > a:hover {
+      color: var(--brand) !important;
+      text-shadow: 0 0 8px rgba(218, 35, 35, 0.6) !important;
+      text-decoration: none !important;
+    }
+
+    /* 3. Artists Grid Layout: Glow primary string text titles */
+    html.lfm-highlight-eligible .grid-items-item-name:hover,
+    html.lfm-icons-hidden .grid-items-item-name:hover,
+    html.lfm-highlight-eligible .grid-items-item-details > a:hover,
+    html.lfm-icons-hidden .grid-items-item-details > a:hover,
+    html.lfm-highlight-eligible .cover-art-caption > a:hover,
+    html.lfm-icons-hidden .cover-art-caption > a:hover {
+      color: var(--brand) !important;
+      text-shadow: 0 0 8px rgba(218, 35, 35, 0.6) !important;
+      text-decoration: none !important;
+    }
 
 .menu-section .section-chevron {
   width: 14px;
@@ -577,6 +723,7 @@
 .section-content.visible {
   max-height: 5000px;
   opacity: 1;
+  overflow: visible;
 }
 
 #external-music-menu a {
@@ -612,12 +759,17 @@
   color: #fff !important;
   border-color: var(--brand) !important;
   font-weight: 600;
-  transition: transform .15s, background .15s;
+  transition: transform .2s, background .2s, box-shadow .2s;
 }
 
 #lfm-modal-box .btn-primary:hover {
   background: var(--brand-hover) !important;
-  transform: scale(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(218,35,35,.25);
+}
+
+#lfm-modal-box .btn-primary:active {
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -650,24 +802,66 @@
   box-shadow: 0 2px 6px rgba(0,0,0,.18);
 }
 
+#lfm-ai-toggle-bar {
+  display: flex;
+  justify-content: center;
+  padding: 4px 12px 2px;
+  direction: ltr;
+}
+
+#open-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 8px;
+  min-height: 26px;
+  min-width: max-content;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  line-height: 1;
+  transition: border-color .15s, color .15s, background .15s;
+}
+
+#open-ai-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand) !important;
+  text-decoration: none !important;
+}
+
+#open-ai-btn .ai-btn-icon {
+  display: none;
+  font-size: 11px;
+  color: var(--brand);
+}
+
+#open-ai-btn:hover .ai-btn-icon {
+  display: inline;
+}
+
+/* #lfm-ai-toggle-btn is just a passthrough span now */
+#lfm-ai-toggle-btn {
+  display: contents;
+}
+
 #lfm-menu-header {
-  padding: 12px 15px 4px;
+  padding: 4px 15px 4px;
   direction: ltr;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+/* Hide the standalone header badge since context is shown inline in quick-actions */
 #lfm-header-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  line-height: 1.4;
-  align-self: flex-start;
+  display: none;
 }
 
 .context-badge-artist {
@@ -728,6 +922,7 @@
   gap: 4px;
   padding: 6px 15px 10px;
   direction: ltr;
+  align-items: center;
 }
 
 #lfm-quick-actions a {
@@ -769,6 +964,21 @@
 
 #lfm-quick-actions a:hover i {
   color: var(--brand);
+}
+
+#lfm-context-inline-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  line-height: 1.4;
+  cursor: default;
+  flex: 2;
 }
 
 #search-help {
@@ -822,49 +1032,199 @@
   padding: 9px 15px 9px 20px;
 }
 
-.settings-modal #lfm-modal-box {
-  min-width: 380px;
-  max-width: 480px;
-}
-
-.settings-tabs {
+#lfm-modal-box.settings-modal {
+  width: 650px;
+  height: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
   display: flex;
-  gap: 4px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 8px;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
 }
 
-.settings-tab {
-  padding: 6px 14px;
+#lfm-modal-box.settings-modal .settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px 0;
+  position: relative;
+}
+
+#lfm-modal-box.settings-modal .settings-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+#lfm-modal-box.settings-modal .settings-header .settings-header-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--brand);
   border: none;
-  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background .15s, color .15s;
+  text-decoration: none;
+}
+
+#lfm-modal-box.settings-modal .settings-header .settings-header-btn:hover {
+  background: var(--bg-hover);
+  color: var(--brand-hover);
+}
+
+#lfm-modal-box.settings-modal .settings-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  padding: 12px 20px 20px;
+  gap: 12px;
+  min-height: 0;
+}
+
+.settings-modal .settings-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-modal .settings-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  margin: 0 0 12px;
+  padding: 0;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+#lfm-modal-box .settings-tab {
+  padding: 4px 10px !important;
+  border: 1px solid var(--border-color);
+  background: transparent;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px !important;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background .15s, color .15s;
+  border-radius: 4px !important;
+  transition: all .2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
 
-.settings-tab:hover {
+#lfm-modal-box .settings-tab:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
-.settings-tab.active {
-  background: var(--brand);
-  color: #fff;
+#lfm-modal-box .settings-tab:active {
+  transform: none;
+}
+
+#lfm-modal-box .settings-tab.active {
+  background: rgba(var(--brand-rgb), .10) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--brand) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--brand);
+  text-underline-offset: 2px;
+  box-shadow: inset 0 0 0 1px rgba(var(--brand-rgb), .15);
+}
+
+#lfm-modal-box .settings-tab.active i {
+  color: var(--text-primary) !important;
+}
+
+#lfm-modal-box .settings-tab:focus {
+  outline: none;
+}
+
+#lfm-modal-box .settings-tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -1px;
+}
+
+#lfm-modal-box .settings-tab i {
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+
+.settings-modal .settings-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.service-launch-btn.hidden {
+  display: none !important;
 }
 
 .settings-panel {
   min-height: 80px;
 }
 
+.settings-card {
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  padding: 12px;
+}
+
+.settings-card-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-grid-card {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  transition: border-color .15s, background .15s !important;
+  box-sizing: border-box;
+}
+
+a.settings-grid-card:hover {
+  border-color: var(--brand) !important;
+  background: var(--bg-hover) !important;
+}
+
 .settings-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 
 .settings-info {
@@ -897,14 +1257,28 @@
 .settings-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  transition: background .15s;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background .15s, border-color .15s;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.settings-item + .settings-item {
+  border-top: 1px solid rgba(255, 255, 255, .08);
 }
 
 .settings-item:hover {
   background: var(--bg-hover);
+  border-color: rgba(218, 35, 35, .25);
+}
+
+.settings-item select {
+  flex-shrink: 0;
+  min-width: 130px;
 }
 
 .modal-hr {
@@ -995,19 +1369,26 @@
 
 .lfm-modal-actions button {
   flex: 1;
-  padding: 9px 14px;
-  border: none;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background .15s, transform .15s, box-shadow .15s;
+  transition: all .2s ease;
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
 .lfm-modal-actions button:hover {
-  transform: scale(1.03);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow);
+  border-color: var(--text-secondary);
+}
+
+.lfm-modal-actions button:active {
+  transform: translateY(0);
 }
 
 .lfm-modal-actions button i {
@@ -1111,60 +1492,72 @@
   display: none;
 }
 
-.ai-modal #lfm-modal-box {
-  width: 720px;
-  max-width: 90vw;
-  max-height: 85vh;
+#lfm-modal-box.ai-modal {
+  width: 650px;
+  height: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px;
+}
+
+#lfm-modal-box.ai-modal #ai-prompt-text {
+  flex: 1;
+  resize: none;
+  margin: 10px 0;
 }
 
 #lfm-scroll-area::-webkit-scrollbar,
-.ai-modal #lfm-modal-box::-webkit-scrollbar,
-.settings-modal #lfm-modal-box::-webkit-scrollbar,
+#lfm-modal-box.ai-modal::-webkit-scrollbar,
+.settings-modal .settings-panel::-webkit-scrollbar,
 #settings-custom-list::-webkit-scrollbar {
   width: 6px;
 }
 
 #lfm-scroll-area::-webkit-scrollbar-track,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-track,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-track,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-track,
+.settings-modal .settings-panel::-webkit-scrollbar-track,
 #settings-custom-list::-webkit-scrollbar-track {
-  background: #282828;
+  background: var(--scrollbar-bg);
 }
 
 #lfm-scroll-area::-webkit-scrollbar-thumb,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-thumb,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-thumb,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-thumb,
+.settings-modal .settings-panel::-webkit-scrollbar-thumb,
 #settings-custom-list::-webkit-scrollbar-thumb {
-  background: #666;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 #lfm-scroll-area::-webkit-scrollbar-thumb:hover,
-.ai-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
-.settings-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
+#lfm-modal-box.ai-modal::-webkit-scrollbar-thumb:hover,
+.settings-modal .settings-panel::-webkit-scrollbar-thumb:hover,
 #settings-custom-list::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-track,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-track,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-track,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-track,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-track,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-track {
-  background: #e5e5e5;
+  background: var(--scrollbar-bg);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-thumb,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-thumb,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-thumb,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-thumb,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-thumb {
-  background: #a0a0a0;
+  background: var(--scrollbar-thumb);
 }
 
 .lfm-light-mode #lfm-scroll-area::-webkit-scrollbar-thumb:hover,
-.lfm-light-mode .ai-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
-.lfm-light-mode .settings-modal #lfm-modal-box::-webkit-scrollbar-thumb:hover,
+.lfm-light-mode #lfm-modal-box.ai-modal::-webkit-scrollbar-thumb:hover,
+.lfm-light-mode .settings-modal .settings-panel::-webkit-scrollbar-thumb:hover,
 .lfm-light-mode #settings-custom-list::-webkit-scrollbar-thumb:hover {
-  background: #7a7a7a;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .service-row {
@@ -1192,8 +1585,57 @@
   line-height: 1;
 }
 
-.service-row:hover .service-launch-btn {
+    .service-row:hover .service-launch-btn {
   opacity: .65;
+}
+
+    /* Always show the theaudiodb json/md buttons and make action icons visible */
+    .service-json-btn, .service-md-btn {
+      opacity: 1 !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      margin-left: 6px;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .service-json-btn:hover, .service-md-btn:hover {
+      color: var(--brand);
+    }
+
+    /* Style for small action icons placed next to services */
+    .service-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 8px;
+    }
+
+.service-action-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-action-btn:hover {
+  opacity: 1;
+  color: var(--brand);
+}
+
+.service-action-btn i,
+.service-action-btn svg {
+  pointer-events: none;
 }
 
 .service-launch-btn:hover {
@@ -1201,17 +1643,77 @@
   color: var(--brand);
 }
 
+.service-ai-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-row:hover .service-ai-btn {
+  opacity: .65;
+}
+
+.service-ai-btn:hover {
+  opacity: 1 !important;
+  color: var(--brand) !important;
+}
+
+.service-ai-btn i,
+.service-ai-btn svg,
+.service-json-btn i,
+.service-json-btn svg,
+.service-md-btn i,
+.service-md-btn svg {
+  pointer-events: none;
+}
+
+.service-json-btn,
+.service-md-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+
+.service-row:hover .service-json-btn,
+.service-row:hover .service-md-btn {
+  opacity: .65;
+}
+
+.service-json-btn:hover,
+.service-md-btn:hover {
+  opacity: 1 !important;
+  color: var(--brand) !important;
+}
+
 .service-launch-btn i,
 .service-launch-btn svg {
   pointer-events: none;
+}
+
+/* Hide specific individual services when deactivated in settings */
+#external-music-menu .service-row.lfm-service-hidden {
+  display: none !important;
 }
   `);
 
   let currentContext = { type: "artist", artist: "", album: "", track: "" };
   let lastUrl = location.href;
-  let observerScheduled = false;
 
-  const CATEGORY_ORDER = ["databases", "streaming", "lyrics", "covers", "social", "additional", "ai"];
+  const CATEGORY_ORDER = ["databases", "streaming", "lyrics", "covers", "social", "additional", "lfm-tools", "ai"];
 
   const CATEGORY_LABELS = {
     databases: "Databases",
@@ -1219,17 +1721,19 @@
     lyrics: "Lyrics",
     covers: "Covers & Images",
     social: "Social Media",
-    additional: "Additional",
+    additional: "Utilities",
+    "lfm-tools": "LFM Tools",
     ai: "AI",
   };
 
   const SERVICE_CATEGORIES = {
-    databases: ["google-band-link", "metal-archives-link", "rym-link", "discogs-link", "musicbrainz-link", "wikipedia-link", "album-of-the-year-link"],
-    streaming: ["spotify-link", "youtube-link", "youtube-music-link", "apple-music-link", "bandcamp-link", "soundcloud-link", "deezer-link", "tidal-link", "amazon-link", "qobuz-link"],
+    databases: ["google-band-link", "album-of-the-year-link", "theaudiodb-link", "metal-archives-link", "rym-link", "discogs-link", "musicbrainz-link", "wikipedia-link", "allmusic-link", "listenbrainz-link", "everynoise-link"],
+    streaming: ["spotify-link", "youtube-link", "youtube-music-link", "apple-music-link", "bandcamp-link", "soundcloud-link", "deezer-link", "tidal-link", "amazon-link", "qobuz-link", "audiomack-link", "monochrome-link"],
     lyrics: ["genius-link", "darklyrics-link", "google-lyrics-link", "musixmatch-link"],
-    covers: ["cov-musichoarderz-link", "google-images-link", "yahoo-images-link", "bing-images-link"],
-    social: ["instagram-link", "facebook-link", "reddit-link"],
-    additional: ["allmusic-link", "chosic-link", "spirit-of-metal-link", "metalstorm-link", "fanart-tv-link", "lucida-link", "sputnikmusic-link"],
+    covers: ["cov-musichoarderz-link", "google-images-link", "yahoo-images-link", "bing-images-link", "fanart-tv-link"],
+    social: ["instagram-link", "facebook-link", "reddit-link", "twitter-x-link"],
+    additional: ["chosic-link", "spirit-of-metal-link", "metalstorm-link", "lucida-link", "sputnikmusic-link", "audio-archive-link", "whosampled-link", "musicmap-link"],
+    "lfm-tools": ["bijou-link", "lastfmstats-link", "lastfmlive-link", "explr-link", "tapmusic-link", "universal-scrobbler-link", "time-capsule-link", "manual-scrobbler-link"],
     ai: ["perplexity-link", "chatgpt-link", "claude-link", "brave-ai-link", "mistral-link", "huggingchat-link", "you-link", "grok-link"],
   };
 
@@ -1244,7 +1748,7 @@
     "wikipedia-link": "Wikipedia",
     "spotify-link": "Spotify",
     "youtube-link": "YouTube",
-    "youtube-music-link": "YouTube Music",
+    "youtube-music-link": "YT Music",
     "apple-music-link": "Apple Music",
     "bandcamp-link": "Bandcamp",
     "soundcloud-link": "SoundCloud",
@@ -1257,9 +1761,9 @@
     "google-lyrics-link": "Google",
     "musixmatch-link": "Musixmatch",
     "cov-musichoarderz-link": "COV - MusicHoarders",
-    "google-images-link": "Google Images",
-    "yahoo-images-link": "Yahoo Images",
-    "bing-images-link": "Bing Images",
+    "google-images-link": "Google",
+    "yahoo-images-link": "Yahoo",
+    "bing-images-link": "Bing",
     "instagram-link": "Instagram",
     "facebook-link": "Facebook",
     "reddit-link": "Reddit",
@@ -1269,8 +1773,13 @@
     "metalstorm-link": "Metal Storm",
     "fanart-tv-link": "Fanart.tv",
     "lucida-link": "Lucida",
-    "album-of-the-year-link": "Album of the Year",
+    "album-of-the-year-link": "AOTY",
     "sputnikmusic-link": "Sputnikmusic",
+    "theaudiodb-link": "TheAudioDB",
+    "listenbrainz-link": "ListenBrainz",
+    "everynoise-link": "Every Noise at Once",
+    "monochrome-link": "Monochrome",
+    "twitter-x-link": "X (Twitter)",
     "perplexity-link": "Perplexity",
     "chatgpt-link": "ChatGPT",
     "claude-link": "Claude",
@@ -1279,11 +1788,23 @@
     "huggingchat-link": "HuggingChat",
     "you-link": "You.com",
     "grok-link": "Grok",
+    "audio-archive-link": "Audio Archive",
+    "whosampled-link": "WhoSampled",
+    "audiomack-link": "Audiomack",
+    "bijou-link": "Bijou",
+    "lastfmstats-link": "Stats",
+    "lastfmlive-link": "Live Dashboard",
+    "explr-link": "Explr.fm - Regions",
+    "tapmusic-link": "TapMusic - Collage",
+    "universal-scrobbler-link": "Universal Scrobbler",
+    "time-capsule-link": "Time Capsule",
+    "manual-scrobbler-link": "Manual Scrobbler",
+    "musicmap-link": "MusicMap",
   };
 
   function getServiceIcon(id) {
     const icons = {
-      "search-link": '<i class="fa-solid fa-icons"></i>',
+      "search-link": '<i class="fa-solid fa-search"></i>',
       "listen-link": '<i class="fa-solid fa-headphones"></i>',
       "google-band-link": '<i class="fa-brands fa-google"></i>',
       "metal-archives-link": '<i class="fa-solid fa-radiation"></i>',
@@ -1298,7 +1819,7 @@
       "bandcamp-link": '<i class="fa-brands fa-bandcamp"></i>',
       "soundcloud-link": '<i class="fa-brands fa-soundcloud"></i>',
       "deezer-link": '<i class="fa-brands fa-deezer"></i>',
-      "tidal-link": '<i class="fa-brands fa-tidal"></i>',
+      "tidal-link": '<i class="fa-solid fa-water"></i>',
       "qobuz-link": '<i class="fa-solid fa-music"></i>',
       "amazon-link": '<i class="fa-brands fa-amazon"></i>',
       "genius-link": '<i class="fa-solid fa-lightbulb"></i>',
@@ -1320,6 +1841,31 @@
       "lucida-link": '<i class="fa-solid fa-download"></i>',
       "album-of-the-year-link": '<i class="fa-solid fa-calendar"></i>',
       "sputnikmusic-link": '<i class="fa-solid fa-guitar"></i>',
+      "theaudiodb-link": '<i class="fa-solid fa-headphones-simple"></i>',
+      "listenbrainz-link": '<i class="fa-solid fa-ear-listen"></i>',
+      "everynoise-link": '<i class="fa-solid fa-circle-radiation"></i>',
+      "audio-archive-link": '<i class="fa-solid fa-archive"></i>',
+      "whosampled-link": '<i class="fa-solid fa-users-between-lines"></i>',
+      "audiomack-link": '<i class="fa-solid fa-compact-disc"></i>',
+      "bijou-link": '<i class="fa-solid fa-chart-line"></i>',
+      "lastfmstats-link": '<i class="fa-solid fa-chart-column"></i>',
+      "lastfmlive-link": '<i class="fa-solid fa-signal"></i>',
+      "explr-link": '<i class="fa-solid fa-map"></i>',
+      "tapmusic-link": '<i class="fa-solid fa-images"></i>',
+      "universal-scrobbler-link": '<i class="fa-solid fa-cloud-arrow-up"></i>',
+      "time-capsule-link": '<i class="fa-solid fa-clock-rotate-left"></i>',
+      "manual-scrobbler-link": '<i class="fa-solid fa-pen-to-square"></i>',
+      "musicmap-link": '<i class="fa-solid fa-earth-americas"></i>',
+      /* google action icons */
+      "google-image-action": '<i class="fa-solid fa-image"></i>',
+      "google-video-action": '<i class="fa-solid fa-video"></i>',
+      "google-ai-action": '<i class="fa-solid fa-flask"></i>',
+      /* Album of the Year sub-actions mapping */
+      "aoty-tags-action": '<i class="fa-solid fa-tags"></i>',
+      "aoty-lists-action": '<i class="fa-solid fa-list"></i>',
+      "aoty-global-action": '<i class="fa-solid fa-earth-europe"></i>',
+      "monochrome-link": '<i class="fa-solid fa-file-audio"></i>',
+      "twitter-x-link": '<i class="fa-brands fa-twitter"></i>',
       "perplexity-link": '<i class="fa-solid fa-magnifying-glass"></i>',
       "chatgpt-link": '<i class="fa-solid fa-robot"></i>',
       "claude-link": '<i class="fa-solid fa-clover"></i>',
@@ -1327,7 +1873,7 @@
       "mistral-link": '<i class="fa-solid fa-wind"></i>',
       "huggingchat-link": '<i class="fa-solid fa-face-smile"></i>',
       "you-link": '<i class="fa-solid fa-circle-question"></i>',
-      "grok-link": '<i class="fa-brands fa-x-twitter"></i>',
+      "grok-link": '<i class="fa-brands fa-square-x-twitter"></i>',
     };
 
     return icons[id] || '<i class="fa-solid fa-link"></i>';
@@ -1337,7 +1883,7 @@
     "search-link": ctx => ctx.artist ? `https://www.google.com/search?udm=50&source=searchlabs&q=${ctx.query}` : "#",
     "listen-link": ctx => ctx.artist ? `https://monochrome.tf/search/${ctx.query}` : "#",
     "google-band-link": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}+${ctx.type}` : "#",
-    "metal-archives-link": ctx => ctx.artist ? ctx.album ? `https://www.metal-archives.com/search?type=album_title&searchString=${ctx.encodedAlbum}` : `https://www.metal-archives.com/search?type=band_name&searchString=${ctx.encodedArtist}` : "#",
+    "metal-archives-link": ctx => ctx.artist ? ctx.track ? `https://www.metal-archives.com/search?searchString=${ctx.encodedTrack}&type=song_title` : ctx.album ? `https://www.metal-archives.com/search?type=album_title&searchString=${ctx.encodedAlbum}` : `https://www.metal-archives.com/search?type=band_name&searchString=${ctx.encodedArtist}` : "#",
     "rym-link": ctx => ctx.artist ? `https://rateyourmusic.com/search?searchtype=${ctx.album ? "l" : "a"}&searchterm=${ctx.query}` : "#",
     "discogs-link": ctx => ctx.artist ? `https://www.discogs.com/search/?q=${ctx.query}&type=${ctx.album ? "release" : "artist"}` : "#",
     "musicbrainz-link": ctx => ctx.artist ? `https://musicbrainz.org/search?query=${ctx.query}&type=${ctx.album ? "release" : "artist"}` : "#",
@@ -1351,7 +1897,7 @@
     "deezer-link": ctx => ctx.artist ? `https://www.deezer.com/search/${ctx.query}` : "#",
     "tidal-link": ctx => ctx.artist ? `https://tidal.com/search?q=${ctx.query}` : "#",
     "qobuz-link": ctx => ctx.artist ? `https://www.qobuz.com/us-en/search?q=${ctx.query}` : "#",
-    "amazon-link": ctx => ctx.artist ? `https://music.amazon.com.au/search?k=${ctx.query}` : "#",
+    "amazon-link": ctx => ctx.artist ? `https://music.amazon.com/search?k=${ctx.query}` : "#",
     "genius-link": ctx => ctx.artist ? `https://genius.com/search?q=${ctx.query}` : "#",
     "darklyrics-link": ctx => ctx.artist ? `http://www.darklyrics.com/search?q=${ctx.query}` : "#",
     "google-lyrics-link": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}+lyrics` : "#",
@@ -1368,9 +1914,22 @@
     "spirit-of-metal-link": ctx => ctx.artist ? `https://www.spirit-of-metal.com/liste_groupe.php?recherche_groupe=${ctx.encodedArtist}` : "#",
     "metalstorm-link": ctx => ctx.artist ? ctx.album ? `https://metalstorm.net/bands/albums.php?a_where=a.albumname&a_what=${ctx.encodedAlbum}` : `https://metalstorm.net/bands/index.php?b_where=b.bandname&b_what=${ctx.encodedArtist}` : "#",
     "fanart-tv-link": ctx => ctx.artist ? `https://fanart.tv/add-entry/?tab=music&search=${ctx.encodedArtist}${ctx.album ? "+" + ctx.encodedAlbum : ""}#music` : "#",
+    "audio-archive-link": ctx => ctx.artist ? `https://archive.org/details/audio?tab=collection&query=${ctx.query}` : "#",
+    "whosampled-link": ctx => ctx.track ? `https://www.whosampled.com/search/tracks/?q=${ctx.encodedTrack}` : ctx.album ? `https://www.whosampled.com/search/tracks/?q=${encodeURIComponent(ctx.album + ' ' + ctx.artist)}` : ctx.artist ? `https://www.whosampled.com/search/artists/?q=${ctx.encodedArtist}` : "#",
+    "audiomack-link": ctx => ctx.artist ? `https://audiomack.com/search?q=${ctx.query}` : "#",
+    "bijou-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://www.bijou.fm/user/${u}/forever`; },
+    "lastfmstats-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://lastfmstats.com/user/${u}/general`; },
+    "lastfmlive-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://lastfm.live/${u}`; },
+    "explr-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://mold.github.io/explr/?username=${u}`; },
+    "tapmusic-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://www.tapmusic.net/collage.php?user=${u}&type=3month&size=5x5&caption=true&playcount=true`; },
     "lucida-link": ctx => ctx.artist ? `https://lucida.to/search?query=${ctx.query}&service=qobuz` : "#",
     "album-of-the-year-link": ctx => ctx.artist ? ctx.album ? `https://www.albumoftheyear.org/search/albums/?q=${ctx.encodedAlbum}` : `https://www.albumoftheyear.org/search/?q=${ctx.encodedArtist}` : "#",
-    "sputnikmusic-link": ctx => ctx.artist ? `https://www.sputnikmusic.com/search?q=${ctx.query}` : "#",
+    "sputnikmusic-link": ctx => ctx.artist ? `https://www.sputnikmusic.com/search_results.php?genreid=0&search_in=Bands&search_text=${ctx.query}` : "#",
+    "theaudiodb-link": ctx => ctx.artist ? `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${ctx.encodedArtist}` : "#",
+    "listenbrainz-link": ctx => ctx.artist ? `https://listenbrainz.org/search/?search_term=${ctx.query}&search_type=${ctx.track ? 'track' : ctx.album ? 'album' : 'artist'}` : "#",
+    "everynoise-link": ctx => ctx.artist ? ctx.track ? `https://everynoise.com/research.html?mode=track&name=${ctx.encodedTrack}` : ctx.album ? `https://everynoise.com/research.html?mode=album&name=${ctx.encodedAlbum}` : `https://everynoise.com/research.html?mode=name&name=${ctx.encodedArtist}` : "#",
+    "monochrome-link": ctx => ctx.artist ? `https://monochrome.tf/search/${ctx.query}` : "#",
+    "twitter-x-link": ctx => ctx.artist ? `https://x.com/search?q=${ctx.query}&src=typed_query&f=user` : "#",
     "perplexity-link": ctx => ctx.artist ? `https://www.perplexity.ai/search/new?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "chatgpt-link": ctx => ctx.artist ? `https://chatgpt.com/?prompt=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "claude-link": ctx => ctx.artist ? `https://claude.ai/new?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
@@ -1379,6 +1938,18 @@
     "huggingchat-link": ctx => ctx.artist ? `https://huggingface.co/chat/?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "you-link": ctx => ctx.artist ? `https://you.com/search?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
     "grok-link": ctx => ctx.artist ? `https://grok.com?q=${encodeURIComponent(ctx.album ? `give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}` : `give me a comprehensive overview of the band ${ctx.artist}`)}` : "#",
+    "universal-scrobbler-link": ctx => `https://universalscrobbler.com/`,
+    "time-capsule-link": ctx => { const u = localStorage.getItem("setting-lfm-username") || "username"; return `https://bxh9261.github.io/last-fm-time-capsule/?username=${u}`; },
+    "manual-scrobbler-link": ctx => `https://www.bijou.fm/manual-scrobbler`,
+    "musicmap-link": ctx => `https://musicmap.info/`,
+    /* google action shortcuts */
+    "google-image-action": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}&udm=2` : "#",
+    "google-video-action": ctx => ctx.artist ? `https://www.google.com/search?q=${ctx.query}&udm=7` : "#",
+    "google-ai-action": ctx => ctx.artist ? `https://www.google.com/search?udm=50&source=searchlabs&q=${ctx.query}` : "#",
+    /* Album of the Year sub-action endpoints */
+    "aoty-tags-action": ctx => ctx.artist ? `https://www.albumoftheyear.org/search/tags/?q=${ctx.query}` : "#",
+    "aoty-lists-action": ctx => ctx.artist ? `https://www.albumoftheyear.org/search/lists/?q=${ctx.query}` : "#",
+    "aoty-global-action": ctx => ctx.artist ? `https://www.albumoftheyear.org/search/?q=${ctx.query}` : "#",
   };
 
   function cleanName(value) {
@@ -1410,6 +1981,7 @@
   function updateMenuLinks(ctx) {
     ctx = buildContext(ctx);
     const badgeEl = document.getElementById("lfm-header-badge");
+    const inlineBadgeEl = document.getElementById("lfm-context-inline-badge");
     const titleEl = document.getElementById("lfm-header-title");
     const subtitleEl = document.getElementById("lfm-header-subtitle");
     if (badgeEl) {
@@ -1417,6 +1989,12 @@
       const typeLabel = typeKey === "track" ? "Track" : typeKey === "album" ? "Album" : "Artist";
       badgeEl.textContent = typeLabel;
       badgeEl.className = "context-badge context-badge-" + typeKey;
+      // Also update inline badge in quick-actions
+      if (inlineBadgeEl) {
+        inlineBadgeEl.textContent = typeLabel;
+        inlineBadgeEl.className = "context-badge context-badge-" + typeKey;
+        inlineBadgeEl.id = "lfm-context-inline-badge";
+      }
     }
     if (titleEl) {
       titleEl.textContent = ctx.track || ctx.album || ctx.artist || "";
@@ -1429,7 +2007,9 @@
     document.querySelectorAll("#external-music-menu a").forEach(link => {
       const isUtilityLink =
         link.id === "open-settings-btn" ||
-        link.id === "open-ai-btn";
+        link.id === "open-ai-btn" ||
+        link.id === "footer-toggle-lights" ||
+        link.id === "footer-collapse-all";
       const isServiceLink =
         link.id &&
         SERVICE_URLS[link.id];
@@ -1547,7 +2127,7 @@
       .filter(url => url && url !== "#");
 
     urls.forEach((url, i) => {
-      setTimeout(() => window.open(url, "_blank"), i * 400);
+      setTimeout(() => window.open(url, "_blank", "noopener,noreferrer"), i * 400);
     });
   }
 
@@ -1569,6 +2149,28 @@
     return d.innerHTML;
   }
 
+  function showToast(message, duration = 3000) {
+    const existing = document.getElementById("lfm-toast");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.id = "lfm-toast";
+    toast.textContent = message;
+    Object.assign(toast.style, {
+      position: "fixed", bottom: "80px", left: "50%", transform: "translateX(-50%)",
+      background: "var(--bg-primary)", color: "var(--text-primary)",
+      padding: "10px 20px", borderRadius: "8px", fontSize: "13px",
+      zIndex: "999999999", boxShadow: "0 4px 12px var(--shadow)",
+      border: "1px solid var(--border-color)",
+      transition: "opacity .3s", opacity: "0",
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = "1"; });
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
   function openExternalToolWindow(url, name, width = 1000, height = 800) {
     const left = (screen.width - width) / 2;
     const top = (screen.height - height) / 2;
@@ -1576,7 +2178,7 @@
       `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
     );
     if (!popup || popup.closed) {
-      window.open(url, "_blank");
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }
 
@@ -1584,7 +2186,7 @@
     if (localStorage.getItem("setting-ai-popup") !== "false") {
       openExternalToolWindow(url, "LastFmToolboxAI");
     } else {
-      window.open(url, "_blank");
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }
 
@@ -1603,7 +2205,60 @@
   }
 
   function getDefaultOpenMode() {
-    return localStorage.getItem("musicengine.defaultOpenMode") || "popup";
+    return localStorage.getItem("musicengine.defaultOpenMode") || "tab";
+  }
+
+  function updateServiceLaunchButtonsVisibility() {
+    const isPopupMode = getDefaultOpenMode() !== "tab";
+    document.querySelectorAll(".service-launch-btn").forEach(btn => {
+      btn.classList.toggle("hidden", !isPopupMode);
+    });
+  }
+
+  const TOGGLE_POSITIONS = ["bottom-left", "bottom-right", "top-left", "top-right"];
+  const TOGGLE_POSITION_KEY = "setting-toggle-position";
+
+  function getTogglePosition() {
+    const stored = localStorage.getItem(TOGGLE_POSITION_KEY);
+    return TOGGLE_POSITIONS.includes(stored) ? stored : "bottom-left";
+  }
+
+  function applyTogglePosition() {
+    const pos = getTogglePosition();
+    TOGGLE_POSITIONS.forEach(p => document.documentElement.classList.remove("lfm-toggle-" + p));
+    document.documentElement.classList.add("lfm-toggle-" + pos);
+  }
+
+  function cycleTogglePosition() {
+    const current = getTogglePosition();
+    const nextIndex = (TOGGLE_POSITIONS.indexOf(current) + 1) % TOGGLE_POSITIONS.length;
+    const nextPos = TOGGLE_POSITIONS[nextIndex];
+    localStorage.setItem(TOGGLE_POSITION_KEY, nextPos);
+    applyTogglePosition();
+    const posSelect = document.getElementById("modal-toggle-position");
+    if (posSelect) {
+      posSelect.value = nextPos;
+    }
+  }
+
+  if (typeof GM_registerMenuCommand !== "undefined") {
+    GM_registerMenuCommand("Toggle", () => {
+      const menu = document.getElementById("external-music-menu");
+      if (menu) {
+        if (menu.classList.contains("visible")) {
+          menu.classList.remove("visible");
+        } else {
+          showPopupWithContext();
+        }
+      }
+    });
+    GM_registerMenuCommand("Settings", () => {
+      const existing = document.getElementById("lfm-modal-overlay");
+      if (!existing) {
+        openSettingsModal();
+      }
+    });
+    GM_registerMenuCommand("Cycle Popup", cycleTogglePosition);
   }
 
   function renderCustomServices() {
@@ -1845,10 +2500,35 @@
       SERVICE_CATEGORIES[cat].forEach(id => {
         html += `<div class="service-row">`;
         html += `<a href="#" id="${id}" class="service-link" target="_blank">${getServiceIcon(id)}${SERVICE_LABELS[id]}</a>`;
+        if (id === "theaudiodb-link") {
+          html += `<button class="service-json-btn" data-service-id="${id}" title="Download JSON"><i class="fa-solid fa-code"></i></button>`;
+          html += `<button class="service-md-btn" data-service-id="${id}" title="Download Markdown"><i class="fa-brands fa-markdown"></i></button>`;
+        }
+        // add Google quick action icons next to the main Google entry
+        if (id === "google-band-link") {
+          html += `<span class="service-action">`;
+          html += `<button class="service-action-btn" data-action="google-image-action" title="Google Images">${getServiceIcon('google-image-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="google-video-action" title="Google Video">${getServiceIcon('google-video-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="google-ai-action" title="Google AI Mode">${getServiceIcon('google-ai-action')}</button>`;
+          html += `</span>`;
+        }
+        // Add sub-action layout elements next to Album of the Year
+        if (id === "album-of-the-year-link") {
+          html += `<span class="service-action">`;
+          html += `<button class="service-action-btn" data-action="aoty-tags-action" title="AOTY Tags">${getServiceIcon('aoty-tags-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="aoty-lists-action" title="AOTY Lists">${getServiceIcon('aoty-lists-action')}</button>`;
+          html += `<button class="service-action-btn" data-action="aoty-global-action" title="AOTY Global Search">${getServiceIcon('aoty-global-action')}</button>`;
+          html += `</span>`;
+        }
+        if (cat === "ai") {
+          html += `<button class="service-ai-btn" data-service-id="${id}" title="Open AI prompt"><i class="fa-solid fa-flask"></i></button>`;
+        }
         html += `<button class="service-launch-btn" data-service-id="${id}" title="Open in new tab"><i class="fa-solid fa-plus"></i></button>`;
         html += `</div>`;
       });
-      html += `<a href="#" class="open-all-link" data-category="${cat}"><i class="fa-solid fa-forward"></i>Open All</a>`;
+      const isOpenAll = localStorage.getItem("setting-openall-" + cat) === "true";
+      const displayStyle = isOpenAll ? "" : 'style="display: none;"';
+      html += `<a href="#" class="open-all-link" data-category="${cat}" ${displayStyle}><i class="fa-solid fa-forward"></i>Open All</a>`;
       html += `</div><hr></div>`;
     });
     return html;
@@ -1858,7 +2538,12 @@
     const button = document.createElement("div");
     button.id = "external-music-button";
     button.innerHTML = '<i class="fa-brands fa-lastfm"></i>';
-    button.title = "Last.fm Toolbox (Ctrl+Shift+E)";
+    button.title = "Last.fm Toolbox (Ctrl+Shift+E) | Right-click to move";
+
+    button.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      cycleTogglePosition();
+    });
 
     button.addEventListener("click", e => {
       e.stopPropagation();
@@ -1878,6 +2563,11 @@
     menu.id = "external-music-menu";
     menu.innerHTML = `
       <div id="lfm-scroll-area">
+        <div id="lfm-ai-toggle-bar">
+          <a href="#" id="open-ai-btn" title="Open AI Prompt Generator">
+            <i class="fa-solid fa-flask ai-btn-icon"></i>Query AI
+          </a>
+        </div>
         <div id="lfm-menu-header">
           <div id="lfm-header-badge"></div>
           <div id="lfm-header-title"></div>
@@ -1885,29 +2575,40 @@
         </div>
         <div id="lfm-quick-actions">
           <a href="#" id="search-link" target="_blank" title="Search"><i class="fa-solid fa-search"></i><span>Search</span></a>
+          <div id="lfm-context-inline-badge"></div>
           <a href="#" id="listen-link" target="_blank" title="Listen"><i class="fa-solid fa-headphones"></i><span>Listen</span></a>
-          <a href="#" id="open-ai-btn" title="AI Prompt"><i class="fa-solid fa-robot"></i><span>AI</span></a>
         </div>
         ${buildCategoryHTML()}
-        <div class="section-block" data-section="custom">
+<div class="section-block" data-section="custom">
         <p class="menu-section" data-section="custom" aria-expanded="false">
           <span>Manual Search</span>
           <span class="section-chevron">▶</span>
         </p>
         <div class="section-content" data-section="custom">
           <div id="search-input-container">
-            <input type="text" id="search-input" placeholder="Artist or Artist - Album">
+            <div id="search-input-wrapper">
+              <input type="text" id="search-input" placeholder="Artist or Artist - Album">
+              <div id="search-help-toggle">?</div>
+              <div id="search-help-popup">Search by artist, album, or track.<br><strong>Supported Formats:</strong><br>
+              • Artist<br>
+              • Artist - Album<br>
+              • Artist - Album - Track
+              </div>
+            </div>
           </div>
-          <p id="search-help">Accepted formats:<br>Artist<br>Artist - Album<br>Artist - Album - Track</p>
         </div></div>
         <div id="lfm-footer">
           <a href="#" id="open-settings-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
           <a href="#" id="footer-toggle-lights" title="Toggle dark/light mode"><i class="fa-solid fa-moon"></i></a>
+          <a href="#" id="footer-collapse-all" title="Collapse all categories"><i class="fa-solid fa-arrow-up-short-wide"></i></a>
         </div>
       </div>
     `;
 
     document.body.appendChild(menu);
+
+    // Ensure New Tab vs Popup visibility applies immediately on load
+    updateServiceLaunchButtonsVisibility();
 
     document.addEventListener("click", e => {
       if (
@@ -1934,13 +2635,39 @@
       }
     });
 
+    function handleMenuClose() {
+      const behavior = localStorage.getItem("setting-close-behavior") || "close";
+      if (behavior === "keep") return false;
+      if (behavior === "timeout") {
+        const delaySec = parseInt(localStorage.getItem("setting-close-delay") || "3", 10);
+        setTimeout(() => {
+          document.getElementById("external-music-menu")?.classList.remove("visible");
+        }, delaySec * 1000);
+        return false;
+      }
+      return true;
+    }
+
     menu.querySelectorAll(".service-link").forEach(link => {
       link.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const url = this.href;
         if (!url || url === "#" || url === location.href + "#") return;
-        menu.classList.remove("visible");
+
+        if (this.id === "theaudiodb-link") {
+          menu.classList.remove("visible");
+          fetch(url).then(r => r.json()).then(data => {
+            const id = data.artists?.[0]?.idArtist;
+            if (id) window.open(`https://www.theaudiodb.com/artist/${id}`, "_blank", "noopener,noreferrer");
+            else window.open(url, "_blank", "noopener,noreferrer");
+          }).catch(() => {
+            window.open(url, "_blank", "noopener,noreferrer");
+          });
+          return;
+        }
+
+        if (handleMenuClose()) menu.classList.remove("visible");
         if (getDefaultOpenMode() === "tab") {
           window.open(url, "_blank", "noopener,noreferrer");
         } else {
@@ -1954,8 +2681,116 @@
         e.stopPropagation();
         const link = document.getElementById(this.dataset.serviceId);
         if (!link || !link.href || link.href === "#" || link.href === location.href + "#") return;
-        menu.classList.remove("visible");
+        if (handleMenuClose()) menu.classList.remove("visible");
         window.open(link.href, "_blank", "noopener,noreferrer");
+      });
+    });
+
+    menu.querySelectorAll(".service-ai-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const providerId = this.dataset.serviceId;
+        if (providerId) {
+          localStorage.setItem("lfm-last-ai-provider", providerId);
+        }
+        menu.classList.remove("visible");
+        openAIModal();
+      });
+    });
+
+    // inline action buttons (e.g., Google image/video/AI shortcuts)
+    menu.querySelectorAll(".service-action-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const actionId = this.dataset.action;
+        if (!actionId || !SERVICE_URLS[actionId]) return;
+        const url = SERVICE_URLS[actionId](buildContext(currentContext));
+        if (!url || url === "#") return;
+        if (handleMenuClose()) menu.classList.remove("visible");
+        if (getDefaultOpenMode() === "tab") {
+          window.open(url, "_blank", "noopener,noreferrer");
+        } else {
+          openToolPopup(url, "MusicEngineTool");
+        }
+      });
+    });
+
+    function formatArtistMarkdown(data) {
+      const artist = data.artists?.[0];
+      if (!artist) return "# No artist data found";
+      const name = artist.strArtist || "Unknown";
+      const banner = artist.strArtistBanner ? `\n![Banner](${artist.strArtistBanner})\n` : "";
+      const logo = artist.strArtistLogo ? `\n![Artist Logo](${artist.strArtistLogo})\n` : "";
+      const genre = artist.strGenre || "Unknown";
+      const country = artist.strCountry || "Unknown";
+      const formed = artist.intFormedYear || "Unknown";
+      const members = artist.intMembers || "Unknown";
+      const label = artist.strLabel || "Unknown";
+      const bio = artist.strBiography || "No biography available.";
+      const thumb = artist.strArtistThumb ? `\n![Band Photo](${artist.strArtistThumb})\n` : "";
+      const wide = artist.strArtistWideThumb ? `\n![Wide Thumb](${artist.strArtistWideThumb})\n` : "";
+      const fanarts = [artist.strArtistFanart, artist.strArtistFanart2, artist.strArtistFanart3, artist.strArtistFanart4].filter(Boolean);
+      const clearart = artist.strArtistClearart ? `\n![Clear Art](${artist.strArtistClearart})\n` : "";
+      return `# ${name}
+${banner}
+**${genre} • ${country}**
+
+## Band Information
+
+| Attribute | Details |
+|-----------|---------|
+| **Formed** | ${formed} |
+| **Members** | ${members} |
+| **Origin** | ${country} |
+| **Label** | ${label} |
+${logo}
+## Biography
+
+${bio}
+## Gallery
+${thumb}${wide}${fanarts.length ? "\n**Fan Art:**\n" + fanarts.map(f => `\n![Fanart](${f})\n`).join("") : ""}${clearart}
+---
+*Data from TheAudioDB • Last updated via API*`;
+    }
+
+    function downloadFromAudioDB(url, format) {
+      fetch(url).then(r => r.json()).then(data => {
+        const artist = data.artists?.[0];
+        if (!artist) {
+          showToast("No TheAudioDB entry found for this artist.");
+          return;
+        }
+        const name = artist.strArtist?.replace(/[^a-z0-9]/gi, "_") || "theaudiodb";
+        let content, mime, ext;
+        if (format === "json") {
+          content = JSON.stringify(data, null, 2);
+          mime = "application/json";
+          ext = "json";
+        } else {
+          content = formatArtistMarkdown(data);
+          mime = "text/markdown";
+          ext = "md";
+        }
+        const blob = new Blob([content], { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }).catch(err => showToast("Download failed: " + err.message));
+    }
+
+    menu.querySelectorAll(".service-json-btn, .service-md-btn").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const serviceId = this.dataset.serviceId;
+        const link = document.getElementById(serviceId);
+        if (!link || !link.href || link.href === "#") return;
+        const format = this.classList.contains("service-json-btn") ? "json" : "md";
+        menu.classList.remove("visible");
+        downloadFromAudioDB(link.href, format);
       });
     });
 
@@ -2014,6 +2849,29 @@
       if (icon) icon.className = isLight ? "fa-solid fa-sun" : "fa-solid fa-moon";
     });
 
+    document.getElementById("footer-collapse-all")?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll(".menu-section").forEach(section => {
+        const name = section.dataset.section;
+        const block = document.querySelector(`.section-block[data-section="${name}"]`);
+        const content = block ? block.querySelector(`.section-content`) : document.querySelector(`.section-content[data-section="${name}"]`);
+        if (content?.classList.contains("visible")) {
+          section.classList.add("collapsed");
+          content.classList.remove("visible");
+          const arrow = section.querySelector(".section-chevron");
+          if (arrow) arrow.textContent = "▶";
+          section.setAttribute("aria-expanded", "false");
+          localStorage.setItem("menu-section-" + name, "collapsed");
+        }
+      });
+      const collapseIcon = e.currentTarget.querySelector("i");
+      if (collapseIcon) {
+        collapseIcon.className = "fa-solid fa-arrow-up-wide-short";
+        setTimeout(() => { collapseIcon.className = "fa-solid fa-arrow-up-short-wide"; }, 600);
+      }
+    });
+
     const searchInput = document.getElementById("search-input");
 
     searchInput.addEventListener("keypress", e => {
@@ -2041,100 +2899,131 @@
   }
 
   function setupToggles() {
-    const hoverToggle = document.getElementById("modal-toggle-artist-symbol") || document.getElementById("toggle-artist-symbol");
-    if (hoverToggle) {
-      if (localStorage.getItem("setting-artist-symbol") === "false") {
-        hoverToggle.classList.remove("active");
-        hoverToggle.dataset.text = "Show";
-        document.documentElement.classList.add("lfm-hide-hover-icons");
-      } else {
-        hoverToggle.classList.add("active");
-        hoverToggle.dataset.text = "Hide";
-        document.documentElement.classList.remove("lfm-hide-hover-icons");
-      }
-      hoverToggle.onclick = function () {
-        this.classList.toggle("active");
-        const active = this.classList.contains("active");
-        localStorage.setItem("setting-artist-symbol", active ? "true" : "false");
-        this.dataset.text = active ? "Hide" : "Show";
-        document.documentElement.classList.toggle("lfm-hide-hover-icons", !active);
-      };
-    }
-    CATEGORY_ORDER.forEach(cat => {
-      const toggle = document.getElementById("modal-toggle-section-" + cat) || document.getElementById("toggle-section-" + cat);
-      const block = document.querySelector(`.section-block[data-section="${cat}"]`);
-      if (!toggle) return;
-      if (localStorage.getItem("setting-section-" + cat) === "true") {
-        toggle.classList.add("active");
-        toggle.dataset.text = "Show";
-        block?.classList.add("hidden-section");
-      } else {
-        toggle.classList.remove("active");
-        toggle.dataset.text = "Hide";
-        block?.classList.remove("hidden-section");
-      }
-      toggle.onclick = function () {
-        this.classList.toggle("active");
-        const hidden = this.classList.contains("active");
-        localStorage.setItem("setting-section-" + cat, hidden ? "true" : "false");
-        this.dataset.text = hidden ? "Show" : "Hide";
-        block?.classList.toggle("hidden-section", hidden);
-      };
-    });
-    const openAllToggle = document.getElementById("modal-toggle-open-all") || document.getElementById("toggle-open-all");
-    if (openAllToggle) {
-      if (localStorage.getItem("setting-open-all") === "false") {
-        openAllToggle.classList.remove("active");
-        openAllToggle.dataset.text = "Show";
-        document.querySelectorAll(".open-all-link").forEach(el => el.classList.add("hidden-section"));
-      } else {
-        openAllToggle.classList.add("active");
-        openAllToggle.dataset.text = "Hide";
-        document.querySelectorAll(".open-all-link").forEach(el => el.classList.remove("hidden-section"));
-      }
-      openAllToggle.onclick = function () {
+    // 1. Text Highlight Layer Toggle Switch Handler
+    const highlightToggle = document.getElementById("modal-toggle-highlight");
+    if (highlightToggle) {
+      const isEnabled = localStorage.getItem("setting-highlight-eligible") === "true";
+      highlightToggle.classList.toggle("active", isEnabled);
+
+      highlightToggle.onclick = function () {
         const active = this.classList.toggle("active");
-        localStorage.setItem("setting-open-all", active ? "true" : "false");
-        this.dataset.text = active ? "Hide" : "Show";
-        document.documentElement.classList.toggle("lfm-hide-open-all", !active);
-        document.querySelectorAll(".open-all-link").forEach(el => {
-          el.classList.toggle("hidden-section", !active);
-        });
+        localStorage.setItem("setting-highlight-eligible", active ? "true" : "false");
+        document.documentElement.classList.toggle("lfm-highlight-eligible", active);
       };
     }
+
+    // 3. Category Sections
+    CATEGORY_ORDER.forEach(cat => {
+      const toggle = document.getElementById("modal-toggle-section-" + cat);
+      const block = document.querySelector(`.section-block[data-section="${cat}"]`);
+      const subGroup = document.getElementById(`subgroup-cat-${cat}`);
+
+      // Bind Individual 'Open All' Toggles
+      const openAllToggle = document.getElementById("modal-toggle-openall-" + cat);
+      if (openAllToggle) {
+        openAllToggle.onclick = function (e) {
+          e.stopPropagation();
+          const active = this.classList.toggle("active");
+          localStorage.setItem("setting-openall-" + cat, active ? "true" : "false");
+
+          // Instantly toggle visibility in the DOM menu
+          const menuLink = document.querySelector(`.open-all-link[data-category="${cat}"]`);
+          if (menuLink) menuLink.style.display = active ? "block" : "none";
+        };
+      }
+
+      if (!toggle) return;
+
+      const isCatHidden = localStorage.getItem("setting-section-" + cat) === "false";
+      toggle.classList.toggle("active", !isCatHidden);
+      block?.classList.toggle("hidden-section", isCatHidden);
+
+      toggle.onclick = function () {
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-section-" + cat, active ? "true" : "false");
+        block?.classList.toggle("hidden-section", !active);
+        if (subGroup) subGroup.style.display = active ? "grid" : "none";
+      };
+
+      // Loop bind handlers for individual services inside this category block
+      SERVICE_CATEGORIES[cat].forEach(id => {
+        const itemToggle = document.getElementById("modal-toggle-svc-" + id);
+        if (!itemToggle) return;
+
+        const isItemHidden = localStorage.getItem("setting-svc-hidden-" + id) === "true";
+        itemToggle.classList.toggle("active", !isItemHidden);
+
+        itemToggle.onclick = function () {
+          const active = this.classList.toggle("active");
+          localStorage.setItem("setting-svc-hidden-" + id, active ? "false" : "true");
+
+          const targets = document.querySelectorAll(`.service-row:has(#${id})`);
+          targets.forEach(t => t.classList.toggle("lfm-service-hidden", !active));
+        };
+      });
+    });
+
+    // 5. Light Mode
     const lightToggle = document.getElementById("modal-toggle-light-mode") || document.getElementById("toggle-light-mode");
     if (lightToggle) {
-      if (localStorage.getItem("setting-light-mode") === "true") {
-        lightToggle.classList.add("active");
-        lightToggle.dataset.text = "On";
-        document.documentElement.classList.add("lfm-light-mode");
-      } else {
-        lightToggle.classList.remove("active");
-        lightToggle.dataset.text = "Off";
-        document.documentElement.classList.remove("lfm-light-mode");
-      }
+      const isEnabled = localStorage.getItem("setting-light-mode") === "true";
+      lightToggle.classList.toggle("active", isEnabled);
+
       lightToggle.onclick = function () {
         const active = this.classList.toggle("active");
         localStorage.setItem("setting-light-mode", active ? "true" : "false");
-        this.dataset.text = active ? "On" : "Off";
         document.documentElement.classList.toggle("lfm-light-mode", active);
+        const footerIcon = document.querySelector("#footer-toggle-lights i");
+        if (footerIcon) footerIcon.className = active ? "fa-solid fa-sun" : "fa-solid fa-moon";
       };
     }
-    const openModeToggle = document.getElementById("modal-toggle-open-mode");
-    if (openModeToggle) {
-      const stored = localStorage.getItem("musicengine.defaultOpenMode");
-      if (stored === "tab") {
-        openModeToggle.classList.remove("active");
-        openModeToggle.dataset.text = "Tab";
-      } else {
-        openModeToggle.classList.add("active");
-        openModeToggle.dataset.text = "Popup";
-      }
-      openModeToggle.onclick = function () {
-        const isPopup = this.classList.toggle("active");
-        localStorage.setItem("musicengine.defaultOpenMode", isPopup ? "popup" : "tab");
-        this.dataset.text = isPopup ? "Popup" : "Tab";
+
+    // 6. AI Popup Mode
+    const aiPopupToggle = document.getElementById("modal-toggle-ai-popup");
+    if (aiPopupToggle) {
+      const isPopup = localStorage.getItem("setting-ai-popup") !== "false";
+      aiPopupToggle.classList.toggle("active", isPopup);
+
+      aiPopupToggle.onclick = function () {
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-ai-popup", active ? "true" : "false");
       };
+    }
+
+    const defaultAISelect = document.getElementById("setting-select-default-ai-provider");
+    if (defaultAISelect) {
+      defaultAISelect.value = localStorage.getItem("setting-default-ai-provider") || "chatgpt-link";
+      defaultAISelect.addEventListener("change", function () {
+        localStorage.setItem("setting-default-ai-provider", this.value);
+      });
+    }
+
+    // Auto-Copy
+    const aiAutoCopyToggle = document.getElementById("modal-toggle-ai-autocopy");
+    if (aiAutoCopyToggle) {
+      const isAutoCopy = localStorage.getItem("setting-ai-autocopy") === "true";
+      aiAutoCopyToggle.classList.toggle("active", isAutoCopy);
+      aiAutoCopyToggle.onclick = function () {
+        const active = this.classList.toggle("active");
+        localStorage.setItem("setting-ai-autocopy", active ? "true" : "false");
+      };
+    }
+
+    // Default Category
+    const defaultAICatSelect = document.getElementById("setting-select-default-ai-category");
+    if (defaultAICatSelect) {
+      defaultAICatSelect.value = localStorage.getItem("setting-default-ai-category") || "overview";
+      defaultAICatSelect.addEventListener("change", function () {
+        localStorage.setItem("setting-default-ai-category", this.value);
+      });
+    }
+
+    const aiSuffixTextarea = document.getElementById("setting-ai-custom-suffix");
+    if (aiSuffixTextarea) {
+      aiSuffixTextarea.value = localStorage.getItem("setting-ai-custom-suffix") || "";
+      aiSuffixTextarea.addEventListener("input", function () {
+        localStorage.setItem("setting-ai-custom-suffix", this.value);
+      });
     }
   }
 
@@ -2154,25 +3043,39 @@
       label: "Overview",
       items: [
         {
-          label: "Overview", prompt: ctx => ctx.track
-            ? `Give me a comprehensive overview of the song ${ctx.track} by ${ctx.artist}`
-            : ctx.album
-              ? `Give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}`
-              : `Give me a comprehensive overview of the band ${ctx.artist}`
-        },
-        {
           label: "Summary", prompt: ctx => ctx.track
-            ? `Summarize the song ${ctx.track} by ${ctx.artist} in a few paragraphs`
+            ? `Role: Act as a senior music historian.\n\nTask: Provide a highly structured executive summary of the track "${ctx.track}" by ${ctx.artist}.\n\nConstraints: Avoid conversational pleasantries and subjective filler. Rely strictly on evidence-based facts.\n\nOutput Format: Return a Markdown document with the following sections:\n- **Core Details:** (Release year, label, primary/secondary sub-genres)\n- **Personnel:** (Producers, primary writers, mixing engineers)\n- **Sonic Profile:** (One sentence defining its technical audio characteristic)`
             : ctx.album
-              ? `Summarize the album ${ctx.album} by ${ctx.artist} in a few paragraphs`
-              : `Summarize the career of ${ctx.artist} in a few paragraphs`
+              ? `Role: Act as a senior music historian.\n\nTask: Provide a highly structured executive summary of the album "${ctx.album}" by ${ctx.artist}.\n\nConstraints: Avoid conversational pleasantries. Rely strictly on verified release data.\n\nOutput Format: Return a Markdown document with the following sections:\n- **Core Details:** (Release date, label, primary sub-genres)\n- **Personnel:** (Key producers, guest features)\n- **Consensus:** (Critical and commercial reception summary)`
+              : `Role: Act as a senior music historian.\n\nTask: Provide a highly structured executive summary of the artist ${ctx.artist}.\n\nConstraints: Avoid conversational pleasantries. Focus on objective career data.\n\nOutput Format: Return a Markdown document with the following sections:\n- **Core Details:** (Active years, geographical origin, definitive sub-genres)\n- **Metrics:** (Estimated total sales/streams, peak chart success)\n- **Legacy:** (Primary contribution to the evolution of their genre)`
         },
         {
-          label: "Background", prompt: ctx => ctx.track
-            ? `What is the background and origin of the song ${ctx.track} by ${ctx.artist}?`
+          label: "Comprehensive Overview", prompt: ctx => ctx.track
+            ? `Role: Act as a music encyclopedia editor.\n\nTask: Compile a single comprehensive overview of the track "${ctx.track}" by ${ctx.artist} covering every major facet — origin, sound, reception, and legacy.\n\nOutput Format: Return a Markdown document with sections for **Background**, **Sound & Style**, **Reception**, and **Legacy**, each 2-3 sentences.`
             : ctx.album
-              ? `What is the background and recording history of the album ${ctx.album} by ${ctx.artist}?`
-              : `What is the background and origin story of ${ctx.artist}?`
+              ? `Role: Act as a music encyclopedia editor.\n\nTask: Compile a single comprehensive overview of the album "${ctx.album}" by ${ctx.artist} covering every major facet — origin, sound, reception, and legacy.\n\nOutput Format: Return a Markdown document with sections for **Background**, **Sound & Style**, **Reception**, and **Legacy**, each 2-3 sentences.`
+              : `Role: Act as a music encyclopedia editor.\n\nTask: Compile a single comprehensive overview of ${ctx.artist} covering every major facet of their career — origin, sound, evolution, and legacy.\n\nOutput Format: Return a Markdown document with sections for **Background**, **Sound & Style**, **Career Evolution**, and **Legacy**, each 2-3 sentences.`
+        },
+        {
+          label: "Guide", prompt: ctx => ctx.track
+            ? `Role: Act as an analytical music curator.\n\nTask: Create a structural listening guide for a first-time listener of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Provide a bulleted Markdown list detailing exactly what audio elements to focus on during:\n1. The intro/rhythm establishment\n2. The vocal delivery and phrasing\n3. The bridge or structural deviations`
+            : ctx.album
+              ? `Role: Act as an analytical music curator.\n\nTask: Create a beginner's entry-point guide for "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Return a Markdown table featuring the 3 most essential tracks. Columns must include: Track Name, Thematic Relevance, and Sonic Identity (described in plain, technical language).`
+              : `Role: Act as an analytical music curator.\n\nTask: Map an entry-point listening sequence for ${ctx.artist}.\n\nOutput Format: Suggest exactly 5 essential tracks to listen to in order. Output as a numbered list where each entry includes the track name and a concise, evidence-based rationale for its placement in the sequence to demonstrate stylistic evolution.`
+        },
+        {
+          label: "Timeline", prompt: ctx => ctx.track
+            ? `Task: Construct a chronological timeline mapping the lifecycle of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Output strictly as a Markdown table with columns: Date (or Year), Event (e.g., studio sessions, single release, chart peak), and Significance.`
+            : ctx.album
+              ? `Task: Construct a chronological timeline mapping the lifecycle of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Output strictly as a Markdown table with columns: Date (or Year), Event (e.g., recording phase, lead singles, album release, tour), and Significance.`
+              : `Task: Construct a chronological timeline of the pivotal milestones in the career of ${ctx.artist}.\n\nOutput Format: Output strictly as a Markdown table with columns: Year, Event (e.g., major releases, label shifts, hiatuses), and Industry Impact.`
+        },
+        {
+          label: "Commercial", prompt: ctx => ctx.track
+            ? `Task: Retrieve raw commercial and streaming metrics for "${ctx.track}" by ${ctx.artist}.\n\nConstraints: Do not summarize. Provide raw data only.\n\nOutput Format: Output as a Markdown table including: RIAA (or global) certifications, peak Billboard/global chart positions, and major streaming milestones.`
+            : ctx.album
+              ? `Task: Retrieve raw commercial and sales metrics for "${ctx.album}" by ${ctx.artist}.\n\nConstraints: Do not summarize. Provide raw data only.\n\nOutput Format: Output as a Markdown table including: First-week sales figures, total certified units, chart longevity, and physical vs. digital performance splits.`
+              : `Task: Detail the absolute commercial apex of ${ctx.artist}.\n\nOutput Format: Output a Markdown table listing their top 3 best-selling albums, top 3 highest-grossing tours, and overall market share/certifications during their peak era.`
         },
       ],
     },
@@ -2180,30 +3083,46 @@
       label: "Analysis",
       items: [
         {
-          label: "Themes", prompt: ctx => ctx.track
-            ? `What are the key themes and influences in the song ${ctx.track} by ${ctx.artist}?`
+          label: "Theory", prompt: ctx => ctx.track
+            ? `Role: Act as a music theorist.\n\nTask: Analyze the composition of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Return a structured breakdown identifying:\n- Key and relative shifts\n- BPM and time signature\n- Primary chord progressions\n- Notable rhythmic syncopation or modulations`
             : ctx.album
-              ? `What are the key themes and influences in the album ${ctx.album} by ${ctx.artist}?`
-              : `What are the key themes and influences in ${ctx.artist}'s music?`
+              ? `Role: Act as a music theorist.\n\nTask: Analyze the overarching musical and structural framework of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Return a bulleted list discussing:\n- Prevailing tempos and keys\n- Recurring harmonic motifs\n- How track sequencing dictates the album's dynamic pacing`
+              : `Role: Act as a music theorist.\n\nTask: Identify the structural and harmonic hallmarks of ${ctx.artist}'s catalog.\n\nOutput Format: Return a structured analysis of their typical chord progressions, scale preferences, rhythmic tendencies, and how they deviate from standard pop or genre formats.`
+        },
+        {
+          label: "Genre Deep Dive", prompt: ctx => ctx.track
+            ? `Role: Act as a genre taxonomist.\n\nTask: Perform a deep dive into the genre classification of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Return a Markdown document covering:\n- **Primary & Sub-Genre:** (exact classification and defining traits)\n- **Lineage:** (the genres and movements it draws from)\n- **Hybridity:** (any cross-genre elements present)`
+            : ctx.album
+              ? `Role: Act as a genre taxonomist.\n\nTask: Perform a deep dive into the genre classification of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Return a Markdown document covering:\n- **Primary & Sub-Genre:** (exact classification and defining traits)\n- **Lineage:** (the genres and movements it draws from)\n- **Hybridity:** (any cross-genre elements present)`
+              : `Role: Act as a genre taxonomist.\n\nTask: Perform a deep dive into the genre classification and evolution of ${ctx.artist}.\n\nOutput Format: Return a Markdown document covering:\n- **Primary & Sub-Genre:** (exact classification and defining traits)\n- **Lineage:** (the genres and movements they draw from)\n- **Evolution:** (how their genre identity has shifted across their catalog)`
         },
         {
           label: "Lyrics", prompt: ctx => ctx.track
-            ? `Analyze the lyrics and themes of ${ctx.track} by ${ctx.artist}`
+            ? `Role: Act as a critical literary analyst.\n\nTask: Deconstruct the lyrics of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Provide a structured breakdown identifying:\n- The central thematic conceit\n- Specific literary devices used (metaphors, double entendres)\n- The dominant rhyming scheme and syllable structure`
             : ctx.album
-              ? `Analyze the lyrics and themes of ${ctx.album} by ${ctx.artist}`
-              : `Analyze the lyrics and themes commonly found in ${ctx.artist}'s music`
+              ? `Role: Act as a critical literary analyst.\n\nTask: Perform a macro thematic analysis of the lyrics across "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Detail the recurring motifs, overarching narrative arcs, and distinct character perspectives maintained throughout the project.`
+              : `Role: Act as a critical literary analyst.\n\nTask: Analyze the dominant lyrical themes and conceptual motifs present throughout ${ctx.artist}'s entire discography.\n\nOutput Format: Document how their subject matter, worldview, and lyrical complexity have evolved over their active years.`
         },
         {
-          label: "Genre", prompt: ctx => ctx.track
-            ? `What genre would you classify ${ctx.track} by ${ctx.artist} as and why?`
+          label: "Sonic", prompt: ctx => ctx.track
+            ? `Role: Act as an audio arrangement expert.\n\nTask: Break down the sonic architecture of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Deconstruct the function of the track by separating it into:\n- The rhythm section (drums/bass dynamics)\n- Lead melody instrumentation\n- Counter-melodies and atmospheric background textures`
             : ctx.album
-              ? `What genre would you classify ${ctx.album} by ${ctx.artist} as and why?`
-              : `What genre would you classify ${ctx.artist} as and why?`
+              ? `Role: Act as an audio arrangement expert.\n\nTask: Break down the overarching sonic palette of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Analyze the balance of instrumentation, recurring sound design textures, and how the physical arrangement supports the album's primary mood.`
+              : `Role: Act as an audio arrangement expert.\n\nTask: Define the core sonic architecture of ${ctx.artist}.\n\nOutput Format: Detail the specific instrumental textures, arrangement techniques, and tone choices that define their signature, recognizable sound.`
         },
         {
-          label: "Compare", prompt: ctx => ctx.album
-            ? `Compare ${ctx.album} by ${ctx.artist} to the artist's previous work`
-            : `Compare ${ctx.artist} to similar artists`
+          label: "Technical", prompt: ctx => ctx.track
+            ? `Role: Act as a studio mix engineer.\n\nTask: Analyze the technical mix and master of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Return a technical breakdown discussing:\n- Specific outboard gear or synthesizers utilized\n- Frequency balance and panning choices\n- Dynamic range compression and spatial effects (reverb/delay)`
+            : ctx.album
+              ? `Role: Act as a studio mix engineer.\n\nTask: Analyze the mix engineering and mastering philosophy of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Discuss the dynamic range (e.g., Loudness War context), frequency spectrum balance, analog vs. digital recording mediums used, and spatial depth.`
+              : `Role: Act as a studio mix engineer.\n\nTask: Describe the typical mixing and mastering aesthetics favored by ${ctx.artist} and their frequent engineers.\n\nOutput Format: Categorize their typical mixes (e.g., dense, sparse, highly compressed, dynamic) and list their staple outboard gear or DAWs.`
+        },
+        {
+          label: "Vocals", prompt: ctx => ctx.track
+            ? `Role: Act as a vocal producer.\n\nTask: Deconstruct the vocal production on "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Detail the suspected microphone techniques, vocal layering/stacking, harmonic structure, tuning processing (e.g., Melodyne/Auto-Tune), and specific spatial effect chains.`
+            : ctx.album
+              ? `Role: Act as a vocal producer.\n\nTask: Deconstruct the vocal production techniques heavily utilized across "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Focus on vocal tracking methods, doubling, choir/harmonic arrangements, and consistent effect chains used throughout the project.`
+              : `Role: Act as a vocal producer.\n\nTask: Analyze the physical vocal techniques and processing norms of ${ctx.artist}.\n\nOutput Format: Discuss their physical vocal range, phrasing tendencies, distinctive timbres, and preferred studio vocal chain processing.`
         },
       ],
     },
@@ -2211,59 +3130,81 @@
       label: "Discovery",
       items: [
         {
-          label: "Similar", prompt: ctx => ctx.album
-            ? `List similar albums to ${ctx.album} by ${ctx.artist}`
-            : `List similar artists and albums for fans of ${ctx.artist}`
+          label: "Similar Artists", prompt: ctx =>
+            `Task: Identify 5 well-known, easily accessible artists similar to ${ctx.artist}${ctx.album ? ` and their album "${ctx.album}"` : ""} in sound and style.\n\nOutput Format: Return a Markdown table with columns: Artist, Signature Album or Track, and Similarity Rationale (one sentence, mainstream-friendly).`
         },
         {
-          label: "Hidden Gems", prompt: ctx => ctx.album
-            ? `What are some hidden gems or deep cuts similar to ${ctx.album} by ${ctx.artist}?`
-            : `What are some hidden gems or lesser-known tracks by ${ctx.artist}?`
+          label: "Niche", prompt: ctx => ctx.track
+            ? `Task: Bypass standard algorithmic recommendations.\n\nConstraints: Do not suggest mainstream or highly popular artists.\n\nOutput Format: Suggest 5 highly obscure, niche, or underground tracks that perfectly match the tempo, sonic characteristics, and production philosophy of "${ctx.track}" by ${ctx.artist}. Provide a 1-sentence technical justification for each.`
+            : ctx.album
+              ? `Task: Bypass standard algorithmic recommendations.\n\nConstraints: Do not suggest mainstream or highly popular artists.\n\nOutput Format: Suggest 5 highly obscure, niche, or underground albums that share the exact sonic characteristics, mood, and production ethos of "${ctx.album}" by ${ctx.artist}. Provide a 1-sentence technical justification for each.`
+              : `Task: Bypass standard algorithmic recommendations.\n\nConstraints: Do not suggest mainstream or highly popular artists.\n\nOutput Format: Suggest 5 highly obscure, niche, or underground artists that share the exact sonic characteristics and artistic ethos of ${ctx.artist}. Provide a 1-sentence technical justification for each.`
         },
-        { label: "Recommendations", prompt: ctx => `If I like ${ctx.artist}${ctx.album ? `'s album ${ctx.album}` : ""}, what else would I enjoy?` },
+        {
+          label: "Samples", prompt: ctx => ctx.track
+            ? `Task: Map the complete sample DNA of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: List any tracks sampled or interpolated to create this song, detailing the exact timestamp if known. Additionally, list notable subsequent tracks by other artists that have sampled this specific song.`
+            : ctx.album
+              ? `Task: Map the sample DNA of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Detail the primary samples and interpolations used in the production of this album. Note if this album has subsequently been heavily sampled by modern producers.`
+              : `Task: Map the overall sample lineage of ${ctx.artist}.\n\nOutput Format: Identify their most frequent sample sources and genres. Detail how often their own catalog is sampled by other artists, providing 3 notable examples.`
+        },
+        {
+          label: "Playlist", prompt: ctx => ctx.track
+            ? `Task: Design a highly curated 10-track playlist where "${ctx.track}" by ${ctx.artist} serves as the centerpiece (track 5).\n\nConstraints: Ensure seamless sonic and rhythmic transitions between all tracks. Do not include other songs by the same artist.\n\nOutput Format: Output as a Markdown table with columns: Track #, Artist, Track Name, and Transition Rationale (focusing on tempo and key matching).`
+            : ctx.album
+              ? `Task: Design a 10-track playlist acting as a sonic and thematic sequel to "${ctx.album}" by ${ctx.artist}.\n\nConstraints: Exclude all songs by ${ctx.artist}.\n\nOutput Format: Output as a Markdown table with columns: Track #, Artist, Track Name, and Sonic Rationale.`
+              : `Task: Design a 10-track introductory playlist for ${ctx.artist}.\n\nConstraints: Sequence the tracks to gradually build in musical complexity.\n\nOutput Format: Output as a Markdown table with columns: Track #, Track Name, and Rationale for its specific placement in the sequence.`
+        },
+        {
+          label: "Live", prompt: ctx => ctx.track
+            ? `Task: Explain the live translation of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Detail the arrangement changes when performed live. Note any instrumentation substitutions, tempo shifts, backing track reliance, or extended solo sections compared to the studio version.`
+            : ctx.album
+              ? `Task: Detail the touring cycle and live translation associated with "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Provide data on the primary stage design concepts, the structure of the standard setlist, and how complex studio production was adapted for live arenas (hired musicians vs. backing tracks).`
+              : `Task: Summarize the live performance philosophy and structural touring history of ${ctx.artist}.\n\nOutput Format: Analyze whether they favor strict studio replication, heavy improvisation, or complete structural rearrangement. Highlight technical stage innovations from their most significant tours.`
+        },
       ],
     },
-    historical: {
-      label: "Historical",
+    context: {
+      label: "Context",
       items: [
         {
-          label: "Context", prompt: ctx => ctx.album
-            ? `What is the historical context of ${ctx.album} by ${ctx.artist}?`
-            : `What is the historical context of ${ctx.artist}?`
-        },
-        {
-          label: "Reception", prompt: ctx => ctx.album
-            ? `How was ${ctx.album} by ${ctx.artist} received at release and how has its legacy evolved?`
-            : `How has ${ctx.artist}'s sound evolved over their career?`
-        },
-        {
-          label: "Legacy", prompt: ctx => ctx.track
-            ? `What is the legacy and cultural impact of ${ctx.track} by ${ctx.artist}?`
+          label: "Influences", prompt: ctx => ctx.track
+            ? `Task: Identify the specific artists, genres, or movements that directly influenced "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Return a Markdown list of primary influences, each with a one-sentence explanation of how that influence is audible or evident.`
             : ctx.album
-              ? `What is the lasting legacy of ${ctx.album} by ${ctx.artist}?`
-              : `What is the legacy and influence of ${ctx.artist} on music?`
-        },
-      ],
-    },
-    technical: {
-      label: "Technical",
-      items: [
-        {
-          label: "Production", prompt: ctx => ctx.album
-            ? `Describe the production, recording, and sound engineering of ${ctx.album} by ${ctx.artist}`
-            : `Describe the production style and recording approach of ${ctx.artist}`
+              ? `Task: Identify the specific artists, genres, or movements that directly influenced "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Return a Markdown list of primary influences, each with a one-sentence explanation of how that influence is audible or evident.`
+              : `Task: Identify the specific artists, genres, or movements that most directly shaped ${ctx.artist}'s sound and career.\n\nOutput Format: Return a Markdown list of primary influences, each with a one-sentence explanation of how that influence is audible or evident.`
         },
         {
-          label: "Personnel", prompt: ctx => ctx.album
-            ? `Who were the musicians, producers, and engineers on ${ctx.album} by ${ctx.artist}?`
-            : `Who are the key members, collaborators, and producers associated with ${ctx.artist}?`
-        },
-        {
-          label: "Songwriting", prompt: ctx => ctx.track
-            ? `Analyze the songwriting, structure, and composition of ${ctx.track} by ${ctx.artist}`
+          label: "Impact", prompt: ctx => ctx.track
+            ? `Task: Detail the socio-political climate and industry impact of "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Explain how the era's zeitgeist influenced the writing, and conversely, how the track disrupted radio formats, streaming trends, or sub-genre viability.`
             : ctx.album
-              ? `Analyze the songwriting and composition across ${ctx.album} by ${ctx.artist}`
-              : `Describe the songwriting style and creative process of ${ctx.artist}`
+              ? `Task: Detail the socio-political climate and industry impact of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Explain how the project reflects or critiques its era. Discuss changes it catalyzed regarding label release strategies, production standards, or broader music industry economics.`
+              : `Task: Analyze the macro impact of ${ctx.artist} on the music business and culture.\n\nOutput Format: Contextualize them within the socio-political movements of their peak era. Detail how they altered touring models, marketing strategies, or broader genre boundaries.`
+        },
+        {
+          label: "Lore", prompt: ctx => ctx.track
+            ? `Task: Document the internet culture and fandom lore associated with "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Identify specific viral trends, persistent memes, copypastas, or subcultural terminology that originated from this audio or its music video.`
+            : ctx.album
+              ? `Task: Analyze the core fanbase demographic and lore that formed around "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Identify specific subcultures, fashion trends, internet milestones, or widespread memes driven by this specific era of the artist.`
+              : `Task: Document the internet lore, fandom demographics, and running jokes native to the ${ctx.artist} catalog.\n\nOutput Format: Detail the official/unofficial name of the fandom, associated subcultures, primary platforms where the fanbase operates, and major memes.`
+        },
+        {
+          label: "Aesthetics", prompt: ctx => ctx.track
+            ? `Role: Act as an art director.\n\nTask: Analyze the visual language of the official music video or promotional art for "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Discuss the cinematography, color grading palette, and direct symbolism utilized.`
+            : ctx.album
+              ? `Role: Act as an art director.\n\nTask: Analyze the visual identity of "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Identify the cover art designer or photographer. Discuss the specific artistic movements that influenced the packaging, typography, and era aesthetics.`
+              : `Role: Act as an art director.\n\nTask: Deconstruct the career-spanning visual aesthetics and iconography utilized by ${ctx.artist}.\n\nOutput Format: Analyze how their stage fashion, album artworks, and visual presentation interface with and enhance their audio output.`
+        },
+        {
+          label: "Trivia", prompt: ctx => ctx.track
+            ? `Task: Provide deep-cut trivia and debunk myths regarding "${ctx.track}" by ${ctx.artist}.\n\nOutput Format: Return two Markdown lists:\n1. **Facts:** 5 highly obscure, verifiable facts about the recording process.\n2. **Myths:** Identify and correct the most common misheard lyrics or structural misconceptions.`
+            : ctx.album
+              ? `Task: Provide deep-cut trivia and debunk myths regarding "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Return two Markdown lists:\n1. **Facts:** 5 highly obscure, verifiable facts about scrapped ideas or studio sessions.\n2. **Myths:** Identify and correct the most prominent urban legends or false narratives surrounding the album's meaning.`
+              : `Task: Provide deep-cut trivia and debunk myths regarding ${ctx.artist}.\n\nOutput Format: Return two Markdown lists:\n1. **Facts:** 5 obscure, verifiable pieces of insider lore regarding unreleased projects or pre-fame life.\n2. **Myths:** Identify and thoroughly debunk the largest public misconceptions or persistent rumors regarding the artist.`
+        },
+        {
+          label: "Philosophy", prompt: ctx => ctx.album
+            ? `Task: Identify the underlying artistic manifesto or ideology driving "${ctx.album}" by ${ctx.artist}.\n\nOutput Format: Detail the philosophical leaning or psychological statement of the work. Cite any specific literature, films, or philosophers that explicitly influenced the project.`
+            : `Task: Analyze the core creative philosophy and worldview driving ${ctx.artist}.\n\nOutput Format: Detail the ethical, artistic, or existential viewpoints that consistently define their output and how they navigate industry compromises.`
         },
       ],
     },
@@ -2271,19 +3212,22 @@
 
   const AI_PRESETS = Object.values(AI_CATEGORIES).flatMap(c => c.items.map(item => item.prompt));
 
-  function openSettingsModal() {
+  function openSettingsModal(initialTab) {
     const existing = document.getElementById("lfm-modal-overlay");
     if (existing) existing.remove();
 
     const overlay = document.createElement("div");
     overlay.id = "lfm-modal-overlay";
 
+    // Added "Info" tab
     const tabs = [
       { id: "general", label: "General", icon: "fa-sliders" },
       { id: "sections", label: "Sections", icon: "fa-layer-group" },
-      { id: "ai", label: "AI", icon: "fa-robot" },
+      { id: "ai", label: "AI", icon: "fa-flask" },
       { id: "custom", label: "Custom", icon: "fa-link" },
       { id: "advanced", label: "Advanced", icon: "fa-screwdriver-wrench" },
+      { id: "docs", label: "Docs", icon: "fa-book" },
+      { id: "info", label: "Info", icon: "fa-circle-info" }
     ];
 
     const customServicesHtml = getCustomServices().map((svc, i) =>
@@ -2294,72 +3238,221 @@
         </div>
         <button class="settings-remove-btn" data-index="${i}"><i class="fa-solid fa-xmark"></i></button>
       </div>`
-    ).join("") || '<p class="settings-section-title" style="padding:10px 12px;margin:0;">No custom services added yet.</p>';
+    ).join("") ||
+      '<p class="settings-section-title" style="padding:10px 12px;margin:0;">No custom services added yet.</p>';
 
     overlay.innerHTML = `
       <div id="lfm-modal-box" class="settings-modal">
-        <span id="lfm-modal-close"><i class="fa-solid fa-xmark"></i></span>
-        <h2><i class="fa-solid fa-gear"></i> Settings</h2>
-
-        <div class="settings-tabs">
-          ${tabs.map(t => `<button class="settings-tab${t.id === "general" ? " active" : ""}" data-tab="${t.id}"><i class="fa-solid ${t.icon}"></i> ${t.label}</button>`).join("")}
+        <div class="settings-header">
+          <h2>Settings</h2>
+          <div style="display:flex;align-items:center;gap:8px;position:absolute;right:16px;top:50%;transform:translateY(-50%);">
+            <span id="lfm-modal-close" style="cursor:pointer;color:var(--text-secondary);font-size:16px;line-height:1;transition:color .15s;"><i class="fa-solid fa-xmark"></i></span>
+          </div>
         </div>
+        <div class="settings-body">
+          <div class="settings-tabs" id="settings-sidebar">
+            ${tabs.map(t => `<button class="settings-tab${t.id === "general" ? " active" : ""}" data-tab="${t.id}" title="${t.label}"><i class="fa-solid ${t.icon}"></i><span class="tab-label">${t.label}</span></button>`).join("")}
+          </div>
+          <div class="settings-content">
 
-        <div class="settings-panel" data-panel="general">
-          <div class="settings-group">
+        <div class="settings-panel" data-panel="general" style="display:flex">
+          <div class="settings-group" style="gap: 8px;">
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Hover &amp; Grid Icons</span>
-                <span class="settings-desc">Shows the small Last.fm toolbox icon beside artist links and image cards.</span>
+                <span class="settings-label">Last.fm Username</span>
+                <span class="settings-desc">Generate dynamic profile metrics and image canvas links.</span>
               </div>
-              <div id="modal-toggle-artist-symbol" class="toggle-switch active" data-text="Hide"></div>
+              <input type="text" id="modal-username-input" placeholder="Username">
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Open All Links</span>
-                <span class="settings-desc">Shows or hides the Open All option inside categories.</span>
+                <span class="settings-label">Inline Toggle</span>
+                <span class="settings-desc">Choose between the bubble button, minimal icon, or hide entirely.</span>
               </div>
-              <div id="modal-toggle-open-all" class="toggle-switch active" data-text="Hide"></div>
+              <select id="modal-icon-style">
+                <option value="bubble">Bubble</option>
+                <option value="minimal">Minimal</option>
+                <option value="hidden">Highlight Only</option>
+              </select>
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Light Mode</span>
-                <span class="settings-desc">Use a brighter interface designed for daytime browsing.</span>
+                <span class="settings-label">Opening Behavior</span>
+                <span class="settings-desc">Popup opens a centered window; Tab opens a regular background tab.</span>
               </div>
-              <div id="modal-toggle-light-mode" class="toggle-switch" data-text="Off"></div>
+              <select id="modal-toggle-open-mode">
+                <option value="popup">Popup Window</option>
+                <option value="tab">New Tab</option>
+              </select>
             </div>
             <div class="settings-item">
               <div class="settings-info">
-                <span class="settings-label">Default Open Mode</span>
-                <span class="settings-desc">Popup opens services in a centered window; New Tab opens in a regular browser tab.</span>
+                <span class="settings-label">Toggle Position</span>
+                <span class="settings-desc">Move the main floating button to avoid UI overlaps.</span>
               </div>
-              <div id="modal-toggle-open-mode" class="toggle-switch active" data-text="Popup"></div>
+              <select id="modal-toggle-position">
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="top-right">Top Right</option>
+              </select>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Menu Behavior</span>
+                <span class="settings-desc">Control when the toolbox menu closes after clicking a service.</span>
+              </div>
+              <select id="modal-close-behavior">
+                <option value="close">Unfocus Close</option>
+                <option value="keep">Keep Open</option>
+                <option value="timeout">Auto-Close</option>
+              </select>
+            </div>
+            <div class="settings-item" id="modal-close-delay-container" style="display: none;">
+              <div class="settings-info">
+                <span class="settings-label">Auto-Close Delay (Seconds)</span>
+                <span class="settings-desc">Time to wait before closing the panel.</span>
+              </div>
+              <input type="number" id="modal-close-delay-input" min="1" max="60" value="3">
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Hover Highlight</span>
+                <span class="settings-desc">Eligible items turn red when hovered to denote right-click capacity.</span>
+              </div>
+              <div id="modal-toggle-highlight" class="toggle-switch"><i class="fa-solid fa-radiation"></i></div>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Color Mode</span>
+                <span class="settings-desc">Toggle user interface between Dark (Default) and Light Mode.</span>
+              </div>
+              <div id="modal-toggle-light-mode" class="toggle-switch"><i class="fa-solid fa-radiation"></i></div>
             </div>
           </div>
         </div>
 
         <div class="settings-panel" data-panel="sections" style="display:none">
-          <p class="settings-section-title">Show or hide entire categories from the toolbox menu.</p>
-          ${CATEGORY_ORDER.map(cat => `<div class="settings-item">
-            <div class="settings-info">
-              <span class="settings-label">${CATEGORY_LABELS[cat]}</span>
-              <span class="settings-desc">${cat === "databases" ? "Google, Metal Archives, RateYourMusic, Discogs, MusicBrainz, Wikipedia, Album of the Year" : cat === "streaming" ? "Spotify, YouTube, Apple Music, Bandcamp, SoundCloud, Deezer, Tidal, Qobuz, Amazon" : cat === "lyrics" ? "Genius, DarkLyrics, Musixmatch" : cat === "covers" ? "MusicHoarders, Google Images, Yahoo Images, Bing Images" : cat === "social" ? "Instagram, Facebook, Reddit" : cat === "additional" ? "AllMusic, Chosic, Spirit of Metal, Metal Storm, Fanart.tv, Lucida, Sputnikmusic" : "Perplexity, ChatGPT, Claude, Brave AI, Mistral, HuggingChat, You.com, Grok"}</span>
-            </div>
-            <div id="modal-toggle-section-${cat}" class="toggle-switch" data-text="Hide"></div>
-          </div>`).join("")}
+          <p class="settings-section-title">Enable or disable categories or fine-tune specific items.</p>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${CATEGORY_ORDER.map(cat => {
+      const isCatHidden = localStorage.getItem("setting-section-" + cat) === "false";
+      const isOpenAll = localStorage.getItem("setting-openall-" + cat) === "true";
+
+      let itemsHtml = `<div class="settings-item-subgroup" id="subgroup-cat-${cat}" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); display: ${isCatHidden ? 'none' : 'grid'}; grid-template-columns: repeat(3, 1fr); gap: 6px 12px;">`;
+
+      SERVICE_CATEGORIES[cat].forEach(id => {
+        const label = SERVICE_LABELS[id] || id;
+        const isItemHidden = localStorage.getItem("setting-svc-hidden-" + id) === "true";
+        itemsHtml += `
+                  <div class="settings-item" style="padding: 2px 4px; min-height: 24px;">
+                    <div class="settings-info">
+                      <span class="settings-label" style="font-weight: 500; font-size: 11.5px; color: var(--text-primary);">${label}</span>
+                    </div>
+                    <div id="modal-toggle-svc-${id}" class="toggle-switch ${!isItemHidden ? 'active' : ''}" style="width: 14px; height: 14px; border-radius: 3px; border-width: 1px;">
+                      <i class="fa-solid fa-check" style="font-size: 9px;"></i>
+                    </div>
+                  </div>`;
+      });
+
+      // Append Open All toggle inline with other grid items
+      itemsHtml += `
+                  <div class="settings-item" style="padding: 2px 4px; min-height: 24px;">
+                    <div class="settings-info">
+                      <span class="settings-label" style="font-weight: 700; font-size: 10px; color: var(--text-secondary); text-transform: uppercase;">Open All</span>
+                    </div>
+                    <div id="modal-toggle-openall-${cat}" class="toggle-switch ${isOpenAll ? 'active' : ''}" style="width: 14px; height: 14px; border-radius: 3px; border-width: 1px;">
+                      <i class="fa-solid fa-check" style="font-size: 9px;"></i>
+                    </div>
+                  </div>
+              </div>`;
+
+      return `
+                <div class="category-toggle-block" style="background: var(--bg-secondary); border-radius: 6px; padding: 12px; border: 1px solid var(--border-color);">
+                  <div class="settings-item" style="padding: 0;">
+                    <div class="settings-info">
+                      <span class="settings-label" style="text-transform: uppercase; letter-spacing: 0.5px; font-size: 13px; font-weight: 700; color: var(--brand);">${CATEGORY_LABELS[cat]}</span>
+                    </div>
+                    <div id="modal-toggle-section-${cat}" class="toggle-switch ${!isCatHidden ? 'active' : ''}">
+                      <i class="fa-solid fa-radiation"></i>
+                    </div>
+                  </div>
+                  ${itemsHtml}
+                </div>
+              `;
+    }).join("")}
+          </div>
         </div>
 
         <div class="settings-panel" data-panel="ai" style="display:none">
-          <div class="settings-item">
-            <div class="settings-info">
-              <span class="settings-label">AI Open Mode</span>
-              <span class="settings-desc">Opens AI providers in a centered popup window instead of a new browser tab.</span>
+          <div class="settings-group" style="gap: 12px;">
+
+            <!-- Toggles Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="settings-item settings-grid-card">
+                <div class="settings-info">
+                  <span class="settings-label">Popup Behavior</span>
+                  <span class="settings-desc">Open providers in a popup window.</span>
+                </div>
+                <div id="modal-toggle-ai-popup" class="toggle-switch"><i class="fa-solid fa-check"></i></div>
+              </div>
+              <div class="settings-item settings-grid-card">
+                <div class="settings-info">
+                  <span class="settings-label">Auto-Copy Prompt</span>
+                  <span class="settings-desc">Copy to clipboard on open.</span>
+                </div>
+                <div id="modal-toggle-ai-autocopy" class="toggle-switch"><i class="fa-solid fa-check"></i></div>
+              </div>
             </div>
-            <div id="modal-toggle-ai-popup" class="toggle-switch active" data-text="Popup"></div>
+
+            <!-- Selects Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="settings-item settings-grid-card">
+                <div class="settings-info">
+                  <span class="settings-label">Default Provider</span>
+                </div>
+                <select id="setting-select-default-ai-provider" style="width: auto; min-width: 110px;">
+                  ${AI_PROVIDERS.map(p => `<option value="${p.id}">${p.label}</option>`).join("")}
+                </select>
+              </div>
+              <div class="settings-item settings-grid-card">
+                <div class="settings-info">
+                  <span class="settings-label">Default Category</span>
+                </div>
+                <select id="setting-select-default-ai-category" style="width: auto; min-width: 110px;">
+                  ${Object.entries(AI_CATEGORIES).map(([key, cat]) => `<option value="${key}">${cat.label}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+
+            <!-- Prompt Preview & Editor -->
+            <div class="settings-grid-card" style="display: flex; flex-direction: column;">
+              <p class="settings-card-title">Prompt Preview &amp; Editor</p>
+              <p class="settings-desc" style="margin: -6px 0 10px;">Select a preset to preview and edit. Changes are saved per-preset.</p>
+              <div style="display: flex; gap: 8px; width: 100%;">
+                <select id="setting-ai-preview-category" style="flex: 1;"></select>
+                <select id="setting-ai-preview-preset" style="flex: 1;"></select>
+              </div>
+              <textarea id="setting-ai-preview-text" style="width: 100%; height: 90px; box-sizing: border-box; resize: vertical; padding: 8px; margin-top: 8px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary); border-radius: 4px;"></textarea>
+              <div style="display: flex; gap: 8px; align-items: center; width: 100%; margin-top: 8px;">
+                <button id="setting-ai-preview-save-btn" style="padding: 5px 14px; font-size: 11px; font-weight: 700; border-radius: 4px; background: rgba(var(--brand-rgb),.12); border: 1px solid var(--brand); color: var(--text-primary); cursor: pointer; transition: background .15s;">Save Preset</button>
+                <button id="setting-ai-preview-reset-btn" style="padding: 5px 10px; font-size: 11px; border-radius: 4px; background: var(--bg-hover); border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer; transition: background .15s;">Reset to Default</button>
+                <span id="setting-ai-preview-status" style="font-size: 11px; color: var(--text-secondary); margin-left: auto;"></span>
+              </div>
+            </div>
+
+            <!-- Custom Instructions -->
+            <div class="settings-grid-card" style="display: flex; flex-direction: column;">
+              <p class="settings-card-title">Custom Instructions</p>
+              <p class="settings-desc" style="margin: -6px 0 10px;">Appended to all generated prompts (e.g., "Format as markdown").</p>
+              <textarea id="setting-ai-custom-suffix" style="width: 100%; height: 60px; box-sizing: border-box; resize: vertical; padding: 8px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary); border-radius: 4px;"></textarea>
+            </div>
+
           </div>
         </div>
 
         <div class="settings-panel" data-panel="custom" style="display:none">
+          <p class="settings-section-title">Add custom links to the toolbox. Use variables like <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, and <code>{query}</code> in the URL template.</p>
           <div id="settings-custom-list">
             ${customServicesHtml}
           </div>
@@ -2370,9 +3463,143 @@
           </div>
         </div>
 
-        <div class="settings-panel" data-panel="advanced" style="display:none">
-          <p class="settings-section-title">Advanced settings and integrations — coming soon.</p>
+        <div class="settings-panel" data-panel="advanced" style="display:none;">
+          <p class="settings-section-title" style="margin: 0 0 10px; flex-shrink: 0;">Backup, restore, fine-tune, or reset your Last.fm Toolbox configuration state variables.</p>
+
+          <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 8px;">
+            <!-- Editor stretches to fill all available space automatically -->
+            <textarea id="modal-advanced-json-editor" spellcheck="false" style="flex: 1; width: 100%; min-height: 0; box-sizing: border-box; font-family: monospace; font-size: 11px; line-height: 1.4; background: var(--input-bg); border: 1px solid var(--input-border); color: #00ce37; border-radius: 6px; padding: 10px; resize: none; margin: 0;"></textarea>
+
+            <!-- Bottom action row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); flex-wrap: wrap; flex-shrink: 0;">
+              <div style="display: flex; gap: 6px;">
+                <button id="settings-export-btn" class="settings-tab" style="padding: 4px 10px !important; font-size: 11px !important; border-radius: 4px !important; margin: 0; background: transparent;"><i class="fa-solid fa-copy"></i> Export</button>
+                <button id="settings-import-btn" class="settings-tab" style="padding: 4px 10px !important; font-size: 11px !important; border-radius: 4px !important; margin: 0; background: transparent;"><i class="fa-solid fa-file-import"></i> Import</button>
+                <button id="settings-reset-btn" class="settings-tab" style="padding: 4px 10px !important; font-size: 11px !important; border-radius: 4px !important; margin: 0; border-color: var(--brand) !important; color: var(--brand) !important; background: rgba(218,35,35,0.06);"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
+              </div>
+              <button id="settings-save-json-btn" class="settings-tab active" style="padding: 4px 14px !important; font-size: 11px !important; border-radius: 4px !important; margin: 0; font-weight: 600;"><i class="fa-solid fa-floppy-disk"></i> Apply Live Edits</button>
+            </div>
+          </div>
         </div>
+
+        <div class="settings-panel" data-panel="docs" style="display:none">
+          <p class="settings-section-title">A quick reference for everything the toolbox can do.</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+
+            <div class="settings-card">
+              <p class="settings-card-title">Keyboard Shortcuts</p>
+              <p class="settings-desc" style="margin:0;"><code>Ctrl+Shift+E</code> opens or closes the toolbox using the current page's context. <code>Esc</code> closes whatever's open — a modal first, then the menu.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">The Floating Button</p>
+              <p class="settings-desc" style="margin:0;">Left-click toggles the menu. Right-click cycles its screen corner: bottom-left → bottom-right → top-left → top-right.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Right-Click Any Link</p>
+              <p class="settings-desc" style="margin:0;">Right-click any artist, album, or track link on Last.fm — grid cards, chartlists, and the "..." more menu included — to jump straight into the toolbox for that item, even with inline icons hidden.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Inline Icons</p>
+              <p class="settings-desc" style="margin:0;">Choose Bubble, Minimal, or Highlight Only under Settings &gt; General &gt; Inline Toggle. Highlight Only skips the icons and just turns eligible links red on hover.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Manual Search</p>
+              <p class="settings-desc" style="margin:0;">Type <code>Artist</code>, <code>Artist - Album</code>, or <code>Artist - Album - Track</code> into the search box and hit Enter to load that context. Click the <code>?</code> icon for a format reminder.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Sections &amp; Open All</p>
+              <p class="settings-desc" style="margin:0;">Click a category header to expand or collapse it — your choice is remembered. Open All is off by default; enable it per-category in Settings &gt; Sections to launch every service in that category, staggered so your browser doesn't choke.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Service Rows</p>
+              <p class="settings-desc" style="margin:0;">Clicking a service opens it using your Opening Behavior setting (Tab or Popup). Hover a row for a <code>+</code> button that always forces a new tab, or a robot icon that sends that context straight into the AI Prompt Generator.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">TheAudioDB Extras</p>
+              <p class="settings-desc" style="margin:0;">The main link resolves straight to the artist's visual page. The <code>&lt;/&gt;</code> and Markdown buttons next to it download the raw API data or a formatted band profile — nothing downloads if no match is found.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">AI Prompt Generator</p>
+              <p class="settings-desc" style="margin:0;">Pick a category and preset, edit the generated prompt inline, then Copy, Open, or Copy &amp; Open. Your last-used provider is remembered, and Settings &gt; AI &gt; Auto-Copy Prompt copies before opening.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Menu Behavior</p>
+              <p class="settings-desc" style="margin:0;">Decide whether the toolbox closes immediately after clicking a service, stays open, or auto-closes after a delay — set it in Settings &gt; General &gt; Menu Behavior.</p>
+            </div>
+
+            <div class="settings-card">
+              <p class="settings-card-title">Troubleshooting</p>
+              <p class="settings-desc" style="margin:0;">Button hidden behind other page UI? Use <code>Ctrl+Shift+E</code>, or your userscript manager's menu commands (Toggle / Settings / Cycle Popup) instead.</p>
+            </div>
+
+          </div>
+        </div>
+
+<div class="settings-panel" data-panel="info" style="display:none">
+          <div style="text-align: center; margin-bottom: 24px; padding-top: 10px;">
+            <i class="fa-brands fa-lastfm" style="font-size: 42px; color: var(--brand); margin-bottom: 8px;"></i>
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">Last.fm: Toolbox</h3>
+            <p style="margin: 4px 0 0; color: var(--text-secondary); font-size: 12px;">Version 6 by deathrashed</p>
+          </div>
+
+          <div class="settings-group" style="gap: 12px;">
+            <p class="settings-section-title" style="margin: 0 0 4px;">Project Links</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <a href="https://greasyfork.org/scripts/563609" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; align-items: flex-start;">
+                <div class="settings-info" style="gap: 4px;">
+                  <span class="settings-label">Greasy Fork</span>
+                  <span class="settings-desc">Rate &amp; review the script.</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="color: var(--text-secondary); margin-top: 2px;"></i>
+              </a>
+              <a href="https://github.com/deathrashed/lastfm-userscript" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; align-items: flex-start;">
+                <div class="settings-info" style="gap: 4px;">
+                  <span class="settings-label">GitHub Repository</span>
+                  <span class="settings-desc">Source, fork, or star.</span>
+                </div>
+                <i class="fa-brands fa-github" style="color: var(--text-secondary); font-size: 16px; margin-top: 2px;"></i>
+              </a>
+              <a href="https://github.com/deathrashed/lastfm-userscript/issues/new" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; grid-column: 1 / -1;">
+                <div class="settings-info" style="gap: 4px;">
+                  <span class="settings-label">Feature Requests &amp; Bug Reports</span>
+                  <span class="settings-desc">Submit ideas or report issues directly via GitHub Issues.</span>
+                </div>
+                <i class="fa-solid fa-lightbulb" style="color: var(--brand); font-size: 16px;"></i>
+              </a>
+            </div>
+
+            <p class="settings-section-title" style="margin: 8px 0 4px;">Recommended Resources</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <a href="https://www.bijou.fm/tools?service=Last.fm" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; align-items: flex-start;">
+                <div class="settings-info" style="gap: 4px;">
+                  <span class="settings-label">Bijou</span>
+                  <span class="settings-desc">Last.fm tools &amp; utilities.</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="color: var(--text-secondary); margin-top: 2px;"></i>
+              </a>
+              <a href="https://github.com/chr1sx/Last.fm-Artwork-Upload-Helper/" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; align-items: flex-start;">
+                <div class="settings-info" style="gap: 4px;">
+                  <span class="settings-label">Artwork Uploader</span>
+                  <span class="settings-desc">Upload custom artwork.</span>
+                </div>
+                <i class="fa-brands fa-github" style="color: var(--text-secondary); font-size: 16px; margin-top: 2px;"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div id="settings-footer" style="text-align:center;padding:12px 24px 6px;font-size:11px;color:var(--text-secondary);border-top:1px solid var(--border-color);margin-top:12px;flex-shrink:0;">
+          <span id="settings-footer-label">General</span>
+        </div>
+          </div>
       </div>
     `;
 
@@ -2390,9 +3617,44 @@
         this.classList.add("active");
         overlay.querySelectorAll(".settings-panel").forEach(p => p.style.display = "none");
         const panel = overlay.querySelector(`.settings-panel[data-panel="${this.dataset.tab}"]`);
-        if (panel) panel.style.display = "block";
+        if (panel) panel.style.display = "flex";
+        const footerLabel = document.getElementById("settings-footer-label");
+        const tabLabel = this.querySelector(".tab-label");
+        if (footerLabel && tabLabel) footerLabel.textContent = tabLabel.textContent;
       });
     });
+
+    // If a specific tab was requested (e.g. from AI modal gear button), activate it
+    if (initialTab) {
+      const targetTab = overlay.querySelector(`.settings-tab[data-tab="${initialTab}"]`);
+      if (targetTab) {
+        overlay.querySelectorAll(".settings-tab").forEach(t => t.classList.remove("active"));
+        targetTab.classList.add("active");
+        overlay.querySelectorAll(".settings-panel").forEach(p => p.style.display = "none");
+        const panel = overlay.querySelector(`.settings-panel[data-panel="${initialTab}"]`);
+        if (panel) panel.style.display = "flex";
+        const footerLabel = document.getElementById("settings-footer-label");
+        const tabLabel = targetTab.querySelector(".tab-label");
+        if (footerLabel && tabLabel) footerLabel.textContent = tabLabel.textContent;
+      }
+    }
+
+    const sidebarToggle = document.getElementById("settings-sidebar-toggle-btn");
+    const sidebar = document.getElementById("settings-sidebar");
+    if (sidebarToggle && sidebar) {
+      if (localStorage.getItem("setting-sidebar-expanded") !== "false") {
+        sidebar.classList.add("expanded");
+        sidebarToggle.innerHTML = '<i class="fa-solid fa-chevron-left"></i><span class="toggle-label">Collapse</span>';
+      }
+      sidebarToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const expanded = sidebar.classList.toggle("expanded");
+        localStorage.setItem("setting-sidebar-expanded", expanded ? "true" : "false");
+        this.innerHTML = expanded
+          ? '<i class="fa-solid fa-chevron-left"></i><span class="toggle-label">Collapse</span>'
+          : '<i class="fa-solid fa-chevron-right"></i><span class="toggle-label">Expand</span>';
+      });
+    }
 
     overlay.querySelectorAll(".settings-remove-btn").forEach(btn => {
       btn.addEventListener("click", function () {
@@ -2416,6 +3678,262 @@
     });
 
     setupToggles();
+
+    // Wire up AI settings prompt preview with persistent per-preset editing
+    const aiPreviewCat = document.getElementById("setting-ai-preview-category");
+    const aiPreviewPreset = document.getElementById("setting-ai-preview-preset");
+    const aiPreviewText = document.getElementById("setting-ai-preview-text");
+    const aiPreviewSaveBtn = document.getElementById("setting-ai-preview-save-btn");
+    const aiPreviewResetBtn = document.getElementById("setting-ai-preview-reset-btn");
+    const aiPreviewStatus = document.getElementById("setting-ai-preview-status");
+
+    if (aiPreviewCat && aiPreviewPreset && aiPreviewText) {
+      // Populate category dropdown
+      aiPreviewCat.innerHTML = Object.entries(AI_CATEGORIES).map(([key, cat]) =>
+        `<option value="${key}">${cat.label}</option>`
+      ).join("");
+
+      function getPreviewStorageKey() {
+        const realCtx = buildContext(currentContext);
+        const ctxType = realCtx.track ? "track" : (realCtx.album ? "album" : "artist");
+        return `setting-ai-preset-override-${aiPreviewCat.value}-${aiPreviewPreset.value}-${ctxType}`;
+      }
+
+      function getDefaultPromptText() {
+        const catKey = aiPreviewCat.value;
+        const category = AI_CATEGORIES[catKey];
+        if (!category) return "";
+        const idx = parseInt(aiPreviewPreset.value, 10);
+        const item = category.items[idx];
+        if (!item) return "";
+
+        const realCtx = buildContext(currentContext);
+        const placeholderCtx = {};
+        if (realCtx.artist) placeholderCtx.artist = "{artist}";
+        if (realCtx.album) placeholderCtx.album = "{album}";
+        if (realCtx.track) placeholderCtx.track = "{track}";
+
+        const suffix = localStorage.getItem("setting-ai-custom-suffix") || "";
+        const suffixStr = suffix ? "\n\n" + suffix : "";
+        return item.prompt(placeholderCtx) + suffixStr;
+      }
+
+      function loadPreviewText() {
+        const override = localStorage.getItem(getPreviewStorageKey());
+        aiPreviewText.value = override !== null ? override : getDefaultPromptText();
+        const hasOverride = override !== null;
+        if (aiPreviewStatus) aiPreviewStatus.textContent = hasOverride ? "✎ Custom" : "";
+      }
+
+      function populatePresets() {
+        const catKey = aiPreviewCat.value;
+        const category = AI_CATEGORIES[catKey];
+        if (!category) return;
+        aiPreviewPreset.innerHTML = category.items.map((item, i) =>
+          `<option value="${i}">${item.label}</option>`
+        ).join("");
+        loadPreviewText();
+      }
+
+      aiPreviewCat.addEventListener("change", populatePresets);
+      aiPreviewPreset.addEventListener("change", loadPreviewText);
+      populatePresets();
+
+      if (aiPreviewSaveBtn) {
+        aiPreviewSaveBtn.addEventListener("click", () => {
+          localStorage.setItem(getPreviewStorageKey(), aiPreviewText.value);
+          if (aiPreviewStatus) {
+            aiPreviewStatus.textContent = "✓ Saved";
+            setTimeout(() => { aiPreviewStatus.textContent = "✎ Custom"; }, 1500);
+          }
+        });
+      }
+
+      if (aiPreviewResetBtn) {
+        aiPreviewResetBtn.addEventListener("click", () => {
+          localStorage.removeItem(getPreviewStorageKey());
+          aiPreviewText.value = getDefaultPromptText();
+          if (aiPreviewStatus) {
+            aiPreviewStatus.textContent = "↺ Reset";
+            setTimeout(() => { aiPreviewStatus.textContent = ""; }, 1500);
+          }
+        });
+      }
+    }
+
+    const posSelect = document.getElementById("modal-toggle-position");
+    if (posSelect) {
+      posSelect.value = getTogglePosition();
+      posSelect.addEventListener("change", function () {
+        localStorage.setItem(TOGGLE_POSITION_KEY, this.value);
+        applyTogglePosition();
+      });
+    }
+
+    const iconStyleSelect = document.getElementById("modal-icon-style");
+    if (iconStyleSelect) {
+      iconStyleSelect.value = localStorage.getItem("setting-icon-style") || "bubble";
+      iconStyleSelect.addEventListener("change", function () {
+        localStorage.setItem("setting-icon-style", this.value);
+        document.documentElement.classList.toggle("lfm-icon-style-minimal", this.value === "minimal");
+        document.documentElement.classList.toggle("lfm-icons-hidden", this.value === "hidden");
+      });
+    }
+
+    const openModeSelect = document.getElementById("modal-toggle-open-mode");
+    if (openModeSelect) {
+      openModeSelect.value = localStorage.getItem("musicengine.defaultOpenMode") || "tab";
+      openModeSelect.addEventListener("change", function () {
+        localStorage.setItem("musicengine.defaultOpenMode", this.value);
+        updateServiceLaunchButtonsVisibility();
+      });
+    }
+
+    // 1. Stored Profile User string tracker
+    const usernameInput = document.getElementById("modal-username-input");
+    if (usernameInput) {
+      usernameInput.value = localStorage.getItem("setting-lfm-username") || "";
+      usernameInput.addEventListener("input", function () {
+        localStorage.setItem("setting-lfm-username", this.value.trim());
+      });
+    }
+
+    // 2. Menu Auto-Close Behavior Visibility Loop & Listeners
+    const closeBehaviorSelect = document.getElementById("modal-close-behavior");
+    const delayContainer = document.getElementById("modal-close-delay-container");
+    const delayInput = document.getElementById("modal-close-delay-input");
+
+    if (closeBehaviorSelect && delayContainer && delayInput) {
+      const updateDelayVisibility = (val) => {
+        delayContainer.style.display = val === "timeout" ? "flex" : "none";
+      };
+
+      closeBehaviorSelect.value = localStorage.getItem("setting-close-behavior") || "close";
+      updateDelayVisibility(closeBehaviorSelect.value);
+
+      closeBehaviorSelect.addEventListener("change", function () {
+        localStorage.setItem("setting-close-behavior", this.value);
+        updateDelayVisibility(this.value);
+      });
+
+      delayInput.value = localStorage.getItem("setting-close-delay") || "3";
+      delayInput.addEventListener("input", function () {
+        localStorage.setItem("setting-close-delay", this.value);
+      });
+    }
+
+    document.getElementById("settings-export-btn")?.addEventListener("click", () => {
+      const config = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+          config[key] = localStorage.getItem(key);
+        }
+      }
+      const json = JSON.stringify(config, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "lastfm-toolbox-settings.json";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast("Settings file downloaded.");
+    });
+
+    document.getElementById("settings-import-btn")?.addEventListener("click", () => {
+      showToast("Paste settings JSON into the prompt that follows");
+      setTimeout(() => {
+        const dataStr = prompt("Paste your exported settings JSON string here:");
+        if (!dataStr) return;
+        try {
+          const config = JSON.parse(dataStr);
+          Object.keys(config).forEach(key => {
+            if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+              localStorage.setItem(key, config[key]);
+            }
+          });
+          showToast("Settings imported! Reloading page...");
+          setTimeout(() => location.reload(), 800);
+        } catch (err) {
+          showToast("Invalid settings JSON: " + err.message);
+        }
+      }, 100);
+    });
+
+    document.getElementById("settings-reset-btn")?.addEventListener("click", () => {
+      if (confirm("Are you sure you want to reset all preferences to defaults? (Your custom services list will be preserved)")) {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if ((key.startsWith("setting-") || key.startsWith("musicengine.")) && key !== "lfm-custom-services") {
+            localStorage.removeItem(key);
+          }
+        }
+        showToast("Settings reset! Reloading page...");
+        setTimeout(() => location.reload(), 800);
+      }
+    });
+
+    // Power-User JSON Editor Initialization & Event Hooks
+    const jsonEditor = document.getElementById("modal-advanced-json-editor");
+    const saveJsonBtn = document.getElementById("settings-save-json-btn");
+
+    if (jsonEditor && saveJsonBtn) {
+      refreshJsonEditor();
+
+      // Bind parsing intercept listener trigger on click events
+      saveJsonBtn.addEventListener("click", function () {
+        try {
+          const parsedConfig = JSON.parse(jsonEditor.value);
+
+          // Clear current keys to guarantee absolute parity on batch deletions
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+              localStorage.removeItem(key);
+            }
+          }
+
+          // Commit valid parsed fields back into localStorage keys
+          Object.keys(parsedConfig).forEach(key => {
+            const val = parsedConfig[key];
+            const serializedVal = (typeof val === "object" && val !== null) ? JSON.stringify(val) : String(val);
+            localStorage.setItem(key, serializedVal);
+          });
+
+          showToast("Configuration state rewritten cleanly! Reloading page...");
+          setTimeout(() => location.reload(), 800);
+        } catch (err) {
+          alert("Syntax Error: Invalid JSON detected. Please check brackets, comma assignments, and quotes.\n\nDetails: " + err.message);
+        }
+      });
+    }
+
+    // Auto-update JSON editor when interacting with UI toggles
+    document.getElementById("lfm-modal-box").addEventListener("click", () => setTimeout(refreshJsonEditor, 10));
+    document.getElementById("lfm-modal-box").addEventListener("input", () => setTimeout(refreshJsonEditor, 10));
+    document.getElementById("lfm-modal-box").addEventListener("change", () => setTimeout(refreshJsonEditor, 10));
+  }
+
+  function refreshJsonEditor() {
+    const jsonEditor = document.getElementById("modal-advanced-json-editor");
+    if (!jsonEditor || document.activeElement === jsonEditor) return;
+
+    const configObj = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith("setting-") || key.startsWith("musicengine.") || key === "lfm-custom-services") {
+        try {
+          configObj[key] = JSON.parse(localStorage.getItem(key));
+        } catch {
+          configObj[key] = localStorage.getItem(key);
+        }
+      }
+    }
+    jsonEditor.value = JSON.stringify(configObj, null, 2);
   }
 
   function openAIModal() {
@@ -2423,15 +3941,19 @@
     if (existing) existing.remove();
 
     const ctx = buildContext(currentContext);
-    const defaultPrompt = ctx.track
+    const suffix = localStorage.getItem("setting-ai-custom-suffix") || "";
+    const suffixStr = suffix ? "\n\n" + suffix : "";
+
+    const defaultPrompt = (ctx.track
       ? `Give me a comprehensive overview of the song ${ctx.track} by ${ctx.artist}`
       : ctx.album
         ? `Give me a comprehensive overview of the album ${ctx.album} by ${ctx.artist}`
         : ctx.artist
           ? `Give me a comprehensive overview of the band ${ctx.artist}`
-          : "";
+          : "") + suffixStr;
 
-    const lastProvider = localStorage.getItem("lfm-last-ai-provider") || "chatgpt-link";
+    const defaultProvider = localStorage.getItem("setting-default-ai-provider") || "chatgpt-link";
+    const lastProvider = localStorage.getItem("lfm-last-ai-provider") || defaultProvider;
 
     const overlay = document.createElement("div");
     overlay.id = "lfm-modal-overlay";
@@ -2440,54 +3962,59 @@
     const contextType = ctx.track ? "Track" : ctx.album ? "Album" : ctx.artist ? "Artist" : "None";
     const contextName = ctx.track ? `${ctx.track} — ${ctx.artist}` : ctx.album ? `${ctx.album} — ${ctx.artist}` : ctx.artist || "";
 
+    // Read default category from settings
+    const defaultCatKey = localStorage.getItem("setting-default-ai-category") || "overview";
+
     const catOptions = Object.entries(AI_CATEGORIES).map(([key, cat]) =>
-      `<option value="${key}">${cat.label}</option>`
+      `<option value="${key}" ${key === defaultCatKey ? 'selected' : ''}>${cat.label}</option>`
     ).join("");
 
     overlay.innerHTML = `
-      <div id="lfm-modal-box" class="ai-modal">
-        <div class="modal-header">
-          <span class="modal-header-icon"><i class="fa-solid fa-robot"></i></span>
-          <span class="modal-header-title">AI Prompt</span>
-          <span id="lfm-modal-close" class="modal-header-close"><i class="fa-solid fa-xmark"></i></span>
+      <div id="lfm-modal-box" class="ai-modal" style="width: 600px; padding: 20px;">
+        <div class="modal-header" style="position: relative; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div style="color: var(--brand); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-flask"></i> AI Prompt Generator</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Configure Request</div>
+          </div>
+          <div style="position: absolute; right: 0; top: 0; display: flex; align-items: center; gap: 8px;">
+            <span id="ai-modal-settings-btn" title="AI Settings" style="cursor: pointer; color: var(--text-secondary); font-size: 14px; transition: color .15s;"><i class="fa-solid fa-gear"></i></span>
+            <span id="lfm-modal-close" style="cursor: pointer; color: var(--text-secondary); font-size: 16px; transition: color .15s;"><i class="fa-solid fa-xmark"></i></span>
+          </div>
         </div>
 
         <div id="ai-context-display">
-          <span class="ai-context-icon"><i class="fa-solid ${contextIcon}"></i></span>
-          <span class="ai-context-type">${contextType}</span>
-          <span class="ai-context-name">${escHtml(contextName)}</span>
-        </div>
-
-        <hr class="modal-hr">
-
-        <div class="ai-dropdown-row">
-          <div class="ai-field">
-            <label for="ai-category-select">Category</label>
-            <select id="ai-category-select">${catOptions}</select>
-          </div>
-          <div class="ai-field">
-            <label for="ai-preset-select">Prompt</label>
-            <select id="ai-preset-select"></select>
+          <span class="ai-context-icon" style="background: rgba(218,35,35,0.1); border-radius: 4px; padding: 4px; height: 24px; width: 24px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid ${contextIcon}"></i></span>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span class="ai-context-type" style="padding: 0; background: transparent; font-size: 9px;">${contextType} Context</span>
+            <span class="ai-context-name" style="font-size: 14px;">${escHtml(contextName)}</span>
           </div>
         </div>
 
-        <hr class="modal-hr">
-
-        <textarea id="ai-prompt-text" placeholder="Write your prompt here..." rows="4">${escHtml(defaultPrompt)}</textarea>
-
-        <hr class="modal-hr">
-
-        <div class="ai-provider-row">
-          <label for="ai-provider-select">Provider</label>
-          <select id="ai-provider-select">
-            ${AI_PROVIDERS.map(p => `<option value="${p.id}"${p.id === lastProvider ? " selected" : ""}>${p.label}</option>`).join("")}
-          </select>
+        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Category</label>
+            <select id="ai-category-select" style="width: 100%; min-width: 100%;">${catOptions}</select>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Prompt Preset</label>
+            <select id="ai-preset-select" style="width: 100%; min-width: 100%;"></select>
+          </div>
         </div>
 
-        <div class="lfm-modal-actions">
-          <button id="ai-copy-btn"><i class="fa-solid fa-copy"></i> Copy</button>
-          <button id="ai-open-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
-          <button id="ai-copy-open-btn" class="btn-primary"><i class="fa-solid fa-copy"></i> Copy &amp; Open</button>
+        <textarea id="ai-prompt-text" style="flex: 1; width: 100%; resize: none; margin-bottom: 12px; background: var(--bg-primary); border: 1px solid var(--border-color);"></textarea>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 12px; border-top: 1px solid var(--border-color); gap: 6px; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column; gap: 4px; width: 180px; min-width: 140px;">
+            <label style="font-size: 10px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Engine</label>
+            <select id="ai-provider-select" style="width: 100%; min-width: 100%;">
+              ${AI_PROVIDERS.map(p => `<option value="${p.id}"${p.id === lastProvider ? " selected" : ""}>${p.label}</option>`).join("")}
+            </select>
+          </div>
+          <div class="lfm-modal-actions" style="margin-top: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch;">
+            <button id="ai-copy-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; margin: 0; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; transition: border-color .2s; min-width: max-content;"><i class="fa-solid fa-copy"></i> Copy</button>
+            <button id="ai-open-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; margin: 0; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; transition: border-color .2s; min-width: max-content;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+            <button id="ai-copy-open-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; margin: 0; background: rgba(var(--brand-rgb), .10); color: var(--text-primary); border: 1px solid var(--brand); cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; transition: border-color .2s; min-width: max-content;"><i class="fa-solid fa-copy"></i> Copy &amp; Open</button>
+          </div>
         </div>
       </div>
     `;
@@ -2500,8 +4027,22 @@
       if (!category) return;
       const select = document.getElementById("ai-preset-select");
       select.innerHTML = category.items.map((item, i) => {
-        const full = item.prompt(ctx);
-        return `<option value="${i}" data-prompt="${escHtml(full)}">${item.label}</option>`;
+        const ctxType = ctx.track ? "track" : (ctx.album ? "album" : "artist");
+        const override = localStorage.getItem(`setting-ai-preset-override-${catKey}-${i}-${ctxType}`);
+
+        let full;
+        if (override !== null) {
+          full = override
+            .replace(/\{artist\}/g, ctx.artist || "")
+            .replace(/\{album\}/g, ctx.album || "")
+            .replace(/\{track\}/g, ctx.track || "");
+        } else {
+          const suffix = localStorage.getItem("setting-ai-custom-suffix") || "";
+          const suffixStr = suffix ? "\n\n" + suffix : "";
+          full = item.prompt(ctx) + suffixStr;
+        }
+
+        return `<option value="${i}" data-prompt="${escHtml(full)}">${item.label}${override !== null ? " ✎" : ""}</option>`;
       }).join("");
       const first = select.options[0];
       if (first) document.getElementById("ai-prompt-text").value = first.dataset.prompt;
@@ -2533,9 +4074,19 @@
       const text = document.getElementById("ai-prompt-text").value;
       const providerId = document.getElementById("ai-provider-select").value;
       if (!text) return;
+
       localStorage.setItem("lfm-last-ai-provider", providerId);
       const provider = AI_PROVIDERS.find(p => p.id === providerId);
-      if (provider) openAIUrl(provider.url(text));
+
+      const isAutoCopy = localStorage.getItem("setting-ai-autocopy") === "true";
+
+      if (isAutoCopy) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (provider) openAIUrl(provider.url(text));
+        });
+      } else {
+        if (provider) openAIUrl(provider.url(text));
+      }
     });
 
     document.getElementById("ai-copy-open-btn").addEventListener("click", () => {
@@ -2554,6 +4105,11 @@
     });
 
     document.getElementById("lfm-modal-close").addEventListener("click", () => overlay.remove());
+
+    document.getElementById("ai-modal-settings-btn").addEventListener("click", () => {
+      overlay.remove();
+      openSettingsModal("ai");
+    });
   }
 
   function setupKeyboardShortcut() {
@@ -2598,54 +4154,63 @@
     });
   }
 
+  const iconStyle = localStorage.getItem("setting-icon-style") || "bubble";
+  document.documentElement.classList.toggle("lfm-icon-style-minimal", iconStyle === "minimal");
+  document.documentElement.classList.toggle("lfm-icons-hidden", iconStyle === "hidden");
+
+  if (localStorage.getItem("setting-highlight-eligible") === "true") {
+    document.documentElement.classList.add("lfm-highlight-eligible");
+  }
   if (localStorage.getItem("setting-light-mode") === "true") {
     document.documentElement.classList.add("lfm-light-mode");
   }
-  if (localStorage.getItem("setting-open-all") === "false") {
-    document.documentElement.classList.add("lfm-hide-open-all");
+
+  // Parse individual category Open All button visibility (Default is hidden/false)
+  CATEGORY_ORDER.forEach(cat => {
+    const isOpenAll = localStorage.getItem("setting-openall-" + cat) === "true";
+    const menuLink = document.querySelector(`.open-all-link[data-category="${cat}"]`);
+    if (menuLink) {
+      menuLink.style.display = isOpenAll ? "block" : "none";
+    }
+  });
+
+  // Parse individual service hidden states on load sequence
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("setting-svc-hidden-") && localStorage.getItem(key) === "true") {
+      const svcId = key.replace("setting-svc-hidden-", "");
+      document.querySelector(`.service-row:has(#${svcId})`)?.classList.add("lfm-service-hidden");
+    }
   }
 
+  applyTogglePosition();
   setupUI();
   setupKeyboardShortcut();
   setupNavigationDetection();
   addContextMenu(document);
   addChartlistContextEntries(document);
 
+  // Debounced execution to prevent main-thread blocking
+  let debounceTimer;
   const observer = new MutationObserver(mutations => {
-    const nodes = [];
-
+    let shouldUpdate = false;
     mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) nodes.push(node);
-      });
+      if (mutation.addedNodes.length > 0) shouldUpdate = true;
     });
 
-    if (observerScheduled) return;
-    observerScheduled = true;
-
-    requestAnimationFrame(() => {
-      observerScheduled = false;
-
-      nodes.forEach(node => {
-        addContextMenu(node);
-        addChartlistContextEntries(node);
-      });
-    });
+    if (shouldUpdate) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        addContextMenu(document);
+        addChartlistContextEntries(document);
+      }, 250);
+    }
   });
 
   observer.observe(document.body, {
     childList: true,
     subtree: true,
   });
-
-  setTimeout(() => {
-    addContextMenu(document);
-    addChartlistContextEntries(document);
-  }, 2000);
-
-  setInterval(() => {
-    addContextMenu(document);
-  }, 3000);
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
