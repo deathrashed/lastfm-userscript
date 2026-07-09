@@ -1254,6 +1254,16 @@ a.settings-grid-card:hover {
   line-height: 1.5;
 }
 
+.settings-author-link {
+  color: inherit;
+  text-decoration: underline;
+  transition: color .15s;
+}
+
+.settings-author-link:hover {
+  color: var(--brand);
+}
+
 .settings-item {
   display: flex;
   align-items: center;
@@ -3548,7 +3558,7 @@ ${thumb}${wide}${fanarts.length ? "\n**Fan Art:**\n" + fanarts.map(f => `\n![Fan
           <div style="text-align: center; margin-bottom: 24px; padding-top: 10px;">
             <i class="fa-brands fa-lastfm" style="font-size: 42px; color: var(--brand); margin-bottom: 8px;"></i>
             <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">Last.fm: Toolbox</h3>
-            <p style="margin: 4px 0 0; color: var(--text-secondary); font-size: 12px;">Version 6 by deathrashed</p>
+            <p style="margin: 4px 0 0; color: var(--text-secondary); font-size: 12px;">Version 6 by <a href="https://www.last.fm/user/deathrashed" target="_blank" class="settings-author-link">deathrashed</a></p>
           </div>
 
           <div class="settings-group" style="gap: 12px;">

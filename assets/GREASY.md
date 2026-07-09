@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" alt="Last.fm Toolbox" width="100">
+  <img src="https://raw.githubusercontent.com/deathrashed/gupload/main/Uploads/Images/last-fm-round-color-icon.svg" alt="Last.fm Toolbox" width="100">
 </p>
 
 <h1 align="center">Last.fm: Toolbox</h1>
@@ -61,58 +61,55 @@ Choose one of the following methods:
 
 ## Features
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Popup &amp; Navigation</h3>
-      <ul>
-        <li><b>Context-Aware Popup</b> — right-click any music link or click the hover bubble icon</li>
-        <li><b>SPA Navigation</b> — title-mutation observer re-detects context on pushState navigation</li>
-        <li><b>Chartlist Integration</b> — the "..." menu on scrobble rows includes a toolbox entry</li>
-        <li><b>Keyboard Shortcuts</b> — <code>Ctrl+Shift+E</code> to toggle; <code>Esc</code> to close</li>
-        <li><b>Debounced MutationObserver</b> — 250 ms debounce batches DOM mutations; visibilitychange handler re-injects on tab refocus</li>
-        <li><b>Collapsible Categories</b> — all sections collapse/expand; state persisted in localStorage</li>
-        <li><b>Menu Close Behavior</b> — Close on Select (default), Keep Open, or Auto-Close with a configurable delay (1–60 seconds)</li>
-        <li><b>Track Support</b> — full context detection for <code>/music/Artist/_/Track</code> pages and links; AI prompts adapt for tracks</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Services &amp; Search</h3>
-      <ul>
-        <li><b>60 Services across 8 categories</b> — Databases, Streaming, Lyrics, Covers &amp; Images, Social Media, Utilities, LFM Tools, and AI</li>
-        <li><b>Inline Sub-Actions</b> — Google exposes Images / Video / AI Mode; Album of the Year exposes Tags / Lists / Global Search; TheAudioDB exposes JSON / Markdown downloads</li>
-        <li><b>AI Prompt Modal</b> — context-aware presets in 5 categories (Overview, Analysis, Discovery, Historical, Technical), per-preset overrides per context type, 8 AI providers, Copy / Open / Copy &amp; Open actions</li>
-        <li><b>Manual Search</b> — set context manually via <code>Artist</code>, <code>Artist - Album</code>, or <code>Artist - Album - Track</code> formats; <code>fa-question</code> info icon toggles a popup listing accepted formats</li>
-        <li><b>Custom Services</b> — add your own URLs with <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, <code>{query}</code>, <code>{type}</code> template variables</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>UI &amp; Display</h3>
-      <ul>
-        <li><b>Light &amp; Dark Mode</b> — toggle from Settings or the footer icon; persists in localStorage; sun/moon icon stays in sync</li>
-        <li><b>Inline Toolbox Toggle</b> — choose Bubble (default), Minimal (transparent floating icon), or Highlight-Only (no inline icons; eligible links highlight on hover)</li>
-        <li><b>Hover Highlight</b> — independent toggle that turns eligible text and grid links red on hover; uses strict <code>&gt; a</code> child selectors so play counts and subtitle lines are not affected</li>
-        <li><b>Customizable Positioning</b> — move the toggle button to any of the 4 corners via right-click, Settings, or the userscript manager command</li>
-        <li><b>Toast Notifications</b> — auto-dismissing overlay replaces <code>alert()</code> / <code>prompt()</code> for all settings actions</li>
-        <li><b>Last.fm Username Setting</b> — drives dynamic profile URLs for the LFM Tools category (Bijou, Stats, Live Dashboard, Explr, TapMusic, Time Capsule)</li>
-        <li><b>Granular Per-Service Visibility</b> — every individual service has its own 14×14 px checkmark toggle in the Sections tab (3-column card layout per category); a per-category Open All sub-toggle replaces the old global switch and defaults to off</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Advanced &amp; Security</h3>
-      <ul>
-        <li><b>Power-User JSON Editor</b> — live serialisation of every <code>setting-*</code>, <code>musicengine.*</code>, and <code>lfm-custom-services</code> key inside the Advanced tab; Apply Live Edits clears and rewrites the entire scope from the parsed JSON</li>
-        <li><b>Export / Import / Reset</b> — download a <code>.json</code> backup, paste JSON to restore, or reset to defaults (preserves the custom services list)</li>
-        <li><b>Link Opening Behavior</b> — services default to opening in a new browser tab; switch to a centered popup window in Settings</li>
-        <li><b>Userscript Manager Commands</b> — Toggle, Settings, and Cycle Popup registered in Tampermonkey/Violentmonkey</li>
-        <li><b>Accessibility</b> — <code>prefers-reduced-motion</code> disables animations and transitions</li>
-        <li><b>Security</b> — <code>rel="noopener noreferrer"</code> on every <code>window.open</code> call</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+<details>
+<summary><strong>Popup &amp; Navigation</strong></summary>
+
+- <strong>Context-Aware Popup</strong> — right-click any music link or click the hover bubble icon
+- <strong>SPA Navigation</strong> — title-mutation observer re-detects context on pushState navigation
+- <strong>Chartlist Integration</strong> — the "..." menu on scrobble rows includes a toolbox entry
+- <strong>Keyboard Shortcuts</strong> — <code>Ctrl+Shift+E</code> to toggle; <code>Esc</code> to close
+- <strong>Debounced MutationObserver</strong> — 250 ms debounce batches DOM mutations; visibilitychange handler re-injects on tab refocus
+- <strong>Collapsible Categories</strong> — all sections collapse/expand; state persisted in localStorage
+- <strong>Menu Close Behavior</strong> — Close on Select (default), Keep Open, or Auto-Close with a configurable delay (1–60 seconds)
+- <strong>Track Support</strong> — full context detection for <code>/music/Artist/_/Track</code> pages and links; AI prompts adapt for tracks
+
+</details>
+
+<details>
+<summary><strong>Services &amp; Search</strong></summary>
+
+- <strong>60 Services across 8 categories</strong> — Databases, Streaming, Lyrics, Covers &amp; Images, Social Media, Utilities, LFM Tools, and AI
+- <strong>Inline Sub-Actions</strong> — Google exposes Images / Video / AI Mode; Album of the Year exposes Tags / Lists / Global Search; TheAudioDB exposes JSON / Markdown downloads
+- <strong>AI Prompt Modal</strong> — context-aware presets in 5 categories (Overview, Analysis, Discovery, Historical, Technical), per-preset overrides per context type, 8 AI providers, Copy / Open / Copy &amp; Open actions
+- <strong>Manual Search</strong> — set context manually via <code>Artist</code>, <code>Artist - Album</code>, or <code>Artist - Album - Track</code> formats; <code>fa-question</code> info icon toggles a popup listing accepted formats
+- <strong>Custom Services</strong> — add your own URLs with <code>{artist}</code>, <code>{album}</code>, <code>{track}</code>, <code>{query}</code>, <code>{type}</code> template variables
+
+</details>
+
+<details>
+<summary><strong>UI &amp; Display</strong></summary>
+
+- <strong>Light &amp; Dark Mode</strong> — toggle from Settings or the footer icon; persists in localStorage; sun/moon icon stays in sync
+- <strong>Inline Toolbox Toggle</strong> — choose Bubble (default), Minimal (transparent floating icon), or Highlight-Only (no inline icons; eligible links highlight on hover)
+- <strong>Hover Highlight</strong> — independent toggle that turns eligible text and grid links red on hover; uses strict <code>&gt; a</code> child selectors so play counts and subtitle lines are not affected
+- <strong>Customizable Positioning</strong> — move the toggle button to any of the 4 corners via right-click, Settings, or the userscript manager command
+- <strong>Toast Notifications</strong> — auto-dismissing overlay replaces <code>alert()</code> / <code>prompt()</code> for all settings actions
+- <strong>Last.fm Username Setting</strong> — drives dynamic profile URLs for the LFM Tools category (Bijou, Stats, Live Dashboard, Explr, TapMusic, Time Capsule)
+- <strong>Granular Per-Service Visibility</strong> — every individual service has its own 14×14 px checkmark toggle in the Sections tab (3-column card layout per category); a per-category Open All sub-toggle replaces the old global switch and defaults to off
+
+</details>
+
+<details>
+<summary><strong>Advanced &amp; Security</strong></summary>
+
+- <strong>Power-User JSON Editor</strong> — live serialisation of every <code>setting-*</code>, <code>musicengine.*</code>, and <code>lfm-custom-services</code> key inside the Advanced tab; Apply Live Edits clears and rewrites the entire scope from the parsed JSON
+- <strong>Export / Import / Reset</strong> — download a <code>.json</code> backup, paste JSON to restore, or reset to defaults (preserves the custom services list)
+- <strong>Link Opening Behavior</strong> — services default to opening in a new browser tab; switch to a centered popup window in Settings
+- <strong>Userscript Manager Commands</strong> — Toggle, Settings, and Cycle Popup registered in Tampermonkey/Violentmonkey
+- <strong>Accessibility</strong> — <code>prefers-reduced-motion</code> disables animations and transitions
+- <strong>Security</strong> — <code>rel="noopener noreferrer"</code> on every <code>window.open</code> call
+
+</details>
 
 ## Services
 
@@ -240,48 +237,52 @@ The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMus
 
 ## Configuration
 
-### URL Template Variables
+<details>
+<summary><strong>URL Template Variables</strong></summary>
 
-For custom services in Settings > Custom:
+For custom services in Settings &gt; Custom:
 
-| Variable | Replaced with |
-|----------|---------------|
-| `{artist}` | URL-encoded artist name |
-| `{album}` | URL-encoded album name (empty for artist context) |
-| `{track}` | URL-encoded track name (empty for non-track contexts) |
-| `{query}` | URL-encoded track + album + artist, or album + artist, or just artist |
-| `{type}` | `track`, `album`, or `band` |
+- <code>{artist}</code> — URL-encoded artist name
+- <code>{album}</code> — URL-encoded album name (empty for artist context)
+- <code>{track}</code> — URL-encoded track name (empty for non-track contexts)
+- <code>{query}</code> — URL-encoded track + album + artist, or album + artist, or just artist
+- <code>{type}</code> — <code>track</code>, <code>album</code>, or <code>band</code>
 
-Example: `https://mysite.com/search?q={query}`
+Example: <code>https://mysite.com/search?q={query}</code>
 
-### Settings Tabs
+</details>
 
-| Tab | Options |
-|-----|---------|
-| **General** | Last.fm Username, Inline Toolbox Toggle (Bubble/Minimal/Highlight-Only), Link Opening Behavior (Popup/Tab), Global Button Position, Menu Close Behavior (+ Auto-Close Delay), Hover Highlight, Color Theme Mode |
-| **Sections** | Per-category cards in a 3-column grid; each service has its own 14×14 px checkmark toggle; per-category "Open All" sub-toggle (off by default) |
-| **AI** | Popup Behavior, Auto-Copy Prompt, Default AI Provider, Default Prompt Category, Prompt Preview & Editor (per-preset overrides per context type), Custom Instruction Suffix |
-| **Custom** | Add / edit / remove custom service URLs |
-| **Advanced** | Power-User JSON Editor, Export (downloads `.json`), Import (paste JSON), Reset (preserves `lfm-custom-services`), Apply Live Edits |
-| **Info** | Version line, Greasy Fork / GitHub / Issue-tracker links, Recommended Resources |
+<details>
+<summary><strong>Settings Tabs</strong></summary>
 
-### Inline Icon Styles
+- <strong>General</strong> — Last.fm Username, Inline Toolbox Toggle (Bubble/Minimal/Highlight-Only), Link Opening Behavior (Popup/Tab), Global Button Position, Menu Close Behavior (+ Auto-Close Delay), Hover Highlight, Color Theme Mode
+- <strong>Sections</strong> — Per-category cards in a 3-column grid; each service has its own 14×14 px checkmark toggle; per-category "Open All" sub-toggle (off by default)
+- <strong>AI</strong> — Popup Behavior, Auto-Copy Prompt, Default AI Provider, Default Prompt Category, Prompt Preview &amp; Editor (per-preset overrides per context type), Custom Instruction Suffix
+- <strong>Custom</strong> — Add / edit / remove custom service URLs
+- <strong>Advanced</strong> — Power-User JSON Editor, Export (downloads <code>.json</code>), Import (paste JSON), Reset (preserves <code>lfm-custom-services</code>), Apply Live Edits
+- <strong>Info</strong> — Version line, Greasy Fork / GitHub / Issue-tracker links, Recommended Resources
 
-| Style | Behaviour |
-|-------|-----------|
-| **Bubble** (default) | Dark round bubble icon next to eligible links and image cards |
-| **Minimal** | Transparent floating icon — no background or shadow |
-| **Highlight Only** | No inline icons at all; eligible links highlight red on hover instead (the Hover Highlight layer is auto-activated) |
+</details>
 
-### AI Prompt Categories
+<details>
+<summary><strong>Inline Icon Styles</strong></summary>
 
-| Category | Has presets for |
-|----------|------------------|
-| **Overview** | Overview, Summary, Background |
-| **Analysis** | Themes, Lyrics, Genre, Compare |
-| **Discovery** | Similar, Hidden Gems, Recommendations |
-| **Historical** | Context, Reception, Legacy |
-| **Technical** | Production, Personnel, Songwriting |
+- <strong>Bubble</strong> (default) — Dark round bubble icon next to eligible links and image cards
+- <strong>Minimal</strong> — Transparent floating icon; no background or shadow
+- <strong>Highlight Only</strong> — No inline icons at all; eligible links highlight red on hover instead (the Hover Highlight layer is auto-activated)
+
+</details>
+
+<details>
+<summary><strong>AI Prompt Categories</strong></summary>
+
+- <strong>Overview</strong> — Overview, Summary, Background
+- <strong>Analysis</strong> — Themes, Lyrics, Genre, Compare
+- <strong>Discovery</strong> — Similar, Hidden Gems, Recommendations
+- <strong>Historical</strong> — Context, Reception, Legacy
+- <strong>Technical</strong> — Production, Personnel, Songwriting
+
+</details>
 
 Each preset prompt is context-aware — it adapts whether you have a track, an album, or just an artist. Custom per-preset overrides can be saved from the AI tab's Prompt Preview & Editor; modified presets are marked with ✎ in the AI modal's dropdown.
 
