@@ -1,18 +1,19 @@
 <p align="center">
-  <img src="assets/icon.png" alt="Last.fm Toolbox" width="100">
+  <img src="assets/graf-banner.png" alt="Last.fm Toolbox" width="">
 </p>
 
-<h1 align="center">Last.fm: Toolbox</h1>
+<h1 align="center">𝗟𝗔𝗦𝗧.𝗙𝗠 𝗧𝗢𝗢𝗟𝗕𝗢𝗫</h1>
 
 <p align="center">
   <a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox">
-    <img src="https://img.shields.io/badge/Install-Greasy%20Fork-DA2323?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Greasy Fork">
+    <img src="https://img.shields.io/badge/Install-Greasy%20Fork-ff260a?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Greasy Fork">
   </a>
   <a href="https://github.com/deathrashed/lastfm-userscript">
-    <img src="https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+    <img src="https://img.shields.io/badge/Source-GitHub-ff260a?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
-  <img src="https://img.shields.io/badge/License-MIT-3DA639?style=for-the-badge&logo=open-source-initiative&logoColor=white" alt="MIT License">
+  <img src="https://img.shields.io/badge/License-MIT-ff260a?style=for-the-badge&logo=open-source-initiative&logoColor=white" alt="MIT License">
 </p>
+
 
 <p align="center">
   A context-aware popup with <strong>60 curated music services</strong> across <strong>8 categories</strong>, injected into every artist, album, and track link on Last.fm. Includes an AI prompt generator, granular per-service visibility, and a live JSON power-user editor.
@@ -28,7 +29,8 @@
 </p>
 
 
-## Installation
+
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Installation
 
 ### Prerequisite: Userscript Manager
 
@@ -59,7 +61,7 @@ Choose one of the following methods:
 1. Clone or fork the [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript) repository.
 2. Drag and drop `lastfm-toolbox.user.js` into your userscript manager, or copy and paste the raw file contents.
 
-## Features
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Features
 
 <table>
   <tr>
@@ -114,7 +116,7 @@ Choose one of the following methods:
   </tr>
 </table>
 
-## Services
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Services
 
 <details>
 <summary><strong>Primary</strong></summary>
@@ -181,7 +183,7 @@ Search (Google), Listen (Monochrome), AI Prompt
 
 The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMusic) plus Time Capsule auto-fill the username from the **Last.fm Username** setting in the General tab.
 
-## Usage
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Usage
 
 <details>
   <summary><b>Open the Toolbox</b></summary>
@@ -238,7 +240,7 @@ The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMus
 
 ---
 
-## Configuration
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Configuration
 
 ### URL Template Variables
 
@@ -287,7 +289,7 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## Limitations
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Limitations
 
 > **Privacy**: Zero tracking, no ads — pure client-side JS with `localStorage` for preferences.
 
@@ -302,7 +304,7 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## Changelog
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Changelog
 
 
 <details>
@@ -410,13 +412,13 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## Source
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Source
 
 [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript)
 
 Bugs, feature requests, or suggestions — open an issue on GitHub.
 
-## Recommended
+## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Recommended
 
 [**Last.fm Artwork Upload Helper**](https://github.com/chr1sx/Last.fm-Artwork-Upload-Helper/) by chr1sx
 - a userscript that streamlines uploading album artwork
