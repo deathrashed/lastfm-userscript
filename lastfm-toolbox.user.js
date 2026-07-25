@@ -3555,15 +3555,19 @@ ${thumb}${wide}${fanarts.length ? "\n**Fan Art:**\n" + fanarts.map(f => `\n![Fan
         </div>
 
 <div class="settings-panel" data-panel="info" style="display:none">
-          <div style="text-align: center; margin-bottom: 24px; padding-top: 10px;">
-            <i class="fa-brands fa-lastfm" style="font-size: 42px; color: var(--brand); margin-bottom: 8px;"></i>
+<div style="text-align: center; margin-bottom: 4px; padding-top: 0;">
+<img
+  src="https://cdn.jsdelivr.net/gh/deathrashed/gupload@main/uPic/graf-banner.png"
+  alt="Last.fm Toolbox"
+  style="display: block; width: 100%; height: auto; margin: 0 auto 2px;"
+>
             <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">Last.fm: Toolbox</h3>
             <p style="margin: 4px 0 0; color: var(--text-secondary); font-size: 12px;">Version 6 by <a href="https://www.last.fm/user/deathrashed" target="_blank" class="settings-author-link">deathrashed</a></p>
           </div>
 
-          <div class="settings-group" style="gap: 12px;">
+<div class="settings-group" style="gap: 4px;">
             <p class="settings-section-title" style="margin: 0 0 4px;">Project Links</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
               <a href="https://greasyfork.org/scripts/563609" target="_blank" class="settings-item settings-grid-card" style="text-decoration: none; align-items: flex-start;">
                 <div class="settings-info" style="gap: 4px;">
                   <span class="settings-label">Greasy Fork</span>

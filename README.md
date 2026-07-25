@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="assets/graf-banner.png" alt="Last.fm Toolbox" width="">
+  <img src="https://cdn.jsdelivr.net/gh/deathrashed/gupload@main/uPic/graf-banner.png" alt="Last.fm Toolbox" width="">
 </p>
+
 
 <h1 align="center">𝗟𝗔𝗦𝗧.𝗙𝗠 𝗧𝗢𝗢𝗟𝗕𝗢𝗫</h1>
 
@@ -27,9 +28,6 @@
   <a href="#configuration">Configuration</a> •
   <a href="#changelog">Changelog</a>
 </p>
-
-
-
 ## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Installation
 
 ### Prerequisite: Userscript Manager
