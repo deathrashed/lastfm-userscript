@@ -28,6 +28,7 @@
   <a href="#configuration">Configuration</a> •
   <a href="#changelog">Changelog</a>
 </p>
+
 ## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Installation
 
 ### Prerequisite: Userscript Manager
