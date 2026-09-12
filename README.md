@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/deathrashed/gupload@main/uPic/graf-banner.png" alt="Last.fm Toolbox" width="">
+  <img src="https://cdn.jsdelivr.net/gh/deathrashed/gupload@main/uploads/icons/banners/graf-banner-lastfm-toolkit.png" alt="Last.fm Toolbox" width="">
 </p>
 
 
