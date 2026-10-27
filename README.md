@@ -1,20 +1,14 @@
 <p align="center">
   <img src="https://cdn.jsdelivr.net/gh/deathrashed/gupload@main/uploads/icons/banners/graf-banner-lastfm-toolkit.png" alt="Last.fm Toolbox" width="">
 </p>
-
-
 <h1 align="center">𝗟𝗔𝗦𝗧.𝗙𝗠 𝗧𝗢𝗢𝗟𝗕𝗢𝗫</h1>
 
 <p align="center">
-  <a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox">
-    <img src="https://img.shields.io/badge/Install-Greasy%20Fork-ff260a?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Greasy Fork">
-  </a>
-  <a href="https://github.com/deathrashed/lastfm-userscript">
-    <img src="https://img.shields.io/badge/Source-GitHub-ff260a?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
-  </a>
-  <img src="https://img.shields.io/badge/License-MIT-ff260a?style=for-the-badge&logo=open-source-initiative&logoColor=white" alt="MIT License">
+  <a href="https://www.last.fm/user/deathrashed"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Made%20for-Last.fm-ff260a.svg?variant=outline&amp;logo=lastdotfm&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/Made%20for-Last.fm-ff260a.svg?variant=outline&amp;logo=lastdotfm&amp;mode=light"></picture></a>
+<a href="https://raw.githubusercontent.com/deathrashed/gupload/refs/heads/main/uploads/files/licenses/mit/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/MIT-License-ff260a.svg?variant=outline&amp;logo=ri%3ATbBrandOpenSource&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/MIT-License-ff260a.svg?variant=outline&amp;logo=ri%3ATbBrandOpenSource&amp;mode=light"></picture></a>
+<a href="https://github.com/deathrashed/lastfm-userscript"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/GitHub-Source-ff260a.svg?variant=outline&amp;logo=ri%3AFaGithub&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/GitHub-Source-ff260a.svg?variant=outline&amp;logo=ri%3AFaGithub&amp;mode=light"></picture></a>
+<a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/GreasyFork-Install-ff260a.svg?variant=outline&amp;logo=greasyfork&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/GreasyFork-Install-ff260a.svg?variant=outline&amp;logo=greasyfork&amp;mode=light"></picture></a>
 </p>
-
 
 <p align="center">
   A context-aware popup with <strong>60 curated music services</strong> across <strong>8 categories</strong>, injected into every artist, album, and track link on Last.fm. Includes an AI prompt generator, granular per-service visibility, and a live JSON power-user editor.
@@ -29,38 +23,22 @@
   <a href="#changelog">Changelog</a>
 </p>
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Installation
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Installation
 
-### Prerequisite: Userscript Manager
+**Choose one of the following installation methods**:
 
-Install a userscript manager before proceeding:
+<a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Install%20on-GreasyFork-5e5e5e.svg?variant=outline&amp;logo=greasyfork&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/Install%20on-GreasyFork-5e5e5e.svg?variant=outline&amp;logo=greasyfork&amp;mode=light"></picture></a> <a href="https://github.com/deathrashed/lastfm-userscript"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Clone/Fork-GitHub%20Repo-9839c3.svg?variant=outline&amp;logo=ri%3ABsGithub&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/badge/Clone/Fork-GitHub%20Repo-9839c3.svg?variant=outline&amp;logo=ri%3ABsGithub&amp;mode=light"></picture></a>
 
-- [Tampermonkey](https://www.tampermonkey.net/) — Chrome, Edge, Firefox, Safari
-- [Violentmonkey](https://violentmonkey.github.io/) — Brave, Edge, Firefox, Opera
-- [Greasemonkey](https://www.greasespot.net/) — Firefox
-- [ScriptCat](https://scriptcat.org/en) — Chrome, Edge, Firefox
+**Userscript manager is a prerequisite**:
 
-Choose one of the following methods:
+- <img width="16" alt="Tampermonkey logo" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Tampermonkey_logo.svg/500px-Tampermonkey_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail"> [Tampermonkey](https://www.tampermonkey.net/) — Chrome, Edge, Firefox, Safari
+- <img width="17" alt="Tampermonkey logo" src="https://raw.githubusercontent.com/violentmonkey/violentmonkey/97eb799d039b5b8d72383fb8d181369e8ff1889d/src/resources/icon.svg"> [Violentmonkey](https://violentmonkey.github.io/) — Brave, Edge, Firefox, Opera
+- <img width="16" alt="Tampermonkey logo" src="https://raw.githubusercontent.com/deathrashed/gupload/main/uploads/images/greasemonkey-logo.svg"> [Greasemonkey](https://www.greasespot.net/) — Firefox
+- <img width="14" alt="Tampermonkey logo" src="https://raw.githubusercontent.com/deathrashed/gupload/main/uploads/images/scriptcat-logo.svg"> [ScriptCat](https://scriptcat.org/en) — Chrome, Edge, Firefox
 
-### Method 1: Install via Greasy Fork (Recommended)
 
-<a href="https://greasyfork.org/en/scripts/563609-last-fm-toolbox">
-  <img src="https://img.shields.io/badge/Install%20on-Greasy%20Fork-DA2323?style=for-the-badge&logo=greasyfork&logoColor=white" alt="Install on Greasy Fork">
-</a>
 
-1. Visit the [Greasy Fork page](https://greasyfork.org/en/scripts/563609-last-fm-toolbox) in your browser.
-2. Click **Install this script**.
-
-### Method 2: Install via GitHub Repository
-
-<a href="https://github.com/deathrashed/lastfm-userscript">
-  <img src="https://img.shields.io/badge/Clone/Fork-GitHub%20Repo-9839c3?style=for-the-badge&logo=github&logoColor=white" alt="Clone or Fork on GitHub">
-</a>
-
-1. Clone or fork the [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript) repository.
-2. Drag and drop `lastfm-toolbox.user.js` into your userscript manager, or copy and paste the raw file contents.
-
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Features
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Features
 
 <table>
   <tr>
@@ -115,7 +93,7 @@ Choose one of the following methods:
   </tr>
 </table>
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Services
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Services
 
 <details>
 <summary><strong>Primary</strong></summary>
@@ -182,7 +160,7 @@ Search (Google), Listen (Monochrome), AI Prompt
 
 The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMusic) plus Time Capsule auto-fill the username from the **Last.fm Username** setting in the General tab.
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Usage
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Usage
 
 <details>
   <summary><b>Open the Toolbox</b></summary>
@@ -239,7 +217,7 @@ The five LFM Tools profile services (Bijou, Stats, Live Dashboard, Explr, TapMus
 
 ---
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Configuration
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Configuration
 
 ### URL Template Variables
 
@@ -288,7 +266,7 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Limitations
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Limitations
 
 > **Privacy**: Zero tracking, no ads — pure client-side JS with `localStorage` for preferences.
 
@@ -303,7 +281,7 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Changelog
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Changelog
 
 
 <details>
@@ -411,13 +389,13 @@ Each preset prompt is context-aware — it adapts whether you have a track, an a
 
 ---
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Source
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Source
 
 [github.com/deathrashed/lastfm-userscript](https://github.com/deathrashed/lastfm-userscript)
 
 Bugs, feature requests, or suggestions — open an issue on GitHub.
 
-## <img src="https://api.iconify.design/selfhst:last-fm.svg?color=" width="22" height="22" alt="Layers icon"> Recommended
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/last-fm.svg" width="22" height="22" alt="Layers icon"> Recommended
 
 [**Last.fm Artwork Upload Helper**](https://github.com/chr1sx/Last.fm-Artwork-Upload-Helper/) by chr1sx
 - a userscript that streamlines uploading album artwork
@@ -426,5 +404,17 @@ Bugs, feature requests, or suggestions — open an issue on GitHub.
 
 [**Bijou**](https://www.bijou.fm/tools?service=Last.fm)
 - a collection of Last.fm tools and utilities
+
+## <a href="https://opensource.org/license/MIT"><img src="https://raw.githubusercontent.com/deathrashed/gupload/refs/heads/main/uploads/files/licenses/mit/mit-license-logo1.svg" height="20" alt="MIT license website"></a> License
+
+<div align="center">
+
+[**𝗠𝗜𝗧 𝗟𝗜𝗖𝗘𝗡𝗦𝗘**](https://raw.githubusercontent.com/deathrashed/gupload/refs/heads/main/uploads/files/licenses/mit/LICENSE)
+
+<a href="https://raw.githubusercontent.com/deathrashed/gupload/refs/heads/main/uploads/files/licenses/mit/LICENSE"><img src="https://raw.githubusercontent.com/deathrashed/gupload/refs/heads/main/uploads/files/licenses/mit/mit-license-badge.svg" alt="MIT Badge" width="180"></a>
+
+**𝗖𝗢𝗣𝗬𝗥𝗜𝗚𝗛𝗧 © 𝟮𝟬𝟮𝟲 𝗗𝗘𝗔𝗧𝗛𝗥𝗔𝗦𝗛𝗘𝗗**
+
+</div>
 
 ---
